@@ -59,6 +59,7 @@ function initSelects() {
     cat.insertAdjacentHTML("beforeend", `<option>${c}</option>`);
     fcat.insertAdjacentHTML("beforeend", `<option>${c}</option>`);
   });
+  fcat.insertAdjacentHTML("beforeend", `<option>Reposición</option>`);
 
   METODOS.forEach(m => met.insertAdjacentHTML("beforeend", `<option>${m}</option>`));
   $("[name=fecha]").value = new Date().toISOString().slice(0, 10);
@@ -88,17 +89,35 @@ function filtered() {
 function render() {
   updateMesFilter();
   const list = filtered();
-  const total = list.reduce((s, r) => s + Number(r.monto), 0);
-  const count = list.length;
-  const avg = count ? total / count : 0;
-  $("#kpiTotal").textContent = fmtMXN(total);
-  $("#kpiCount").textContent = count;
-  $("#kpiAvg").textContent = fmtMXN(avg);
-  $("#kpiTotalSub").textContent = (state.filterMes || state.filterCat) ? "Con filtros aplicados" : "Histórico";
+  
+  let totalEgresos = 0;
+  let totalIngresos = 0;
+  let countEgresos = 0;
+  let countIngresos = 0;
+
+  list.forEach(r => {
+    const t = r.tipo || 'Egreso';
+    if (t === 'Egreso') {
+      totalEgresos += Number(r.monto);
+      countEgresos++;
+    } else {
+      totalIngresos += Number(r.monto);
+      countIngresos++;
+    }
+  });
+
+  const saldo = totalIngresos - totalEgresos;
+
+  $("#kpiSaldo").textContent = fmtMXN(saldo);
+  $("#kpiSaldo").style.color = saldo >= 0 ? "#1a2a5e" : "var(--danger)";
+  $("#kpiEgresos").textContent = fmtMXN(totalEgresos);
+  $("#kpiEgresosCount").textContent = `${countEgresos} Gastos`;
+  $("#kpiIngresos").textContent = fmtMXN(totalIngresos);
+  $("#kpiIngresosCount").textContent = `${countIngresos} Reposiciones`;
   $("#clearFilters").style.display = (state.filterMes || state.filterCat) ? "" : "none";
 
   renderCharts(list);
-  renderTable(list, total);
+  renderTable(list, totalEgresos); // Pasar totalEgresos para el pie de la tabla
 }
 
 function renderCharts(list) {
@@ -106,14 +125,19 @@ function renderCharts(list) {
   wrap.style.display = list.length ? "" : "none";
   if (!list.length) return;
 
+  // Filtrar solo egresos para el desglose por categorías
+  const egresosOnly = list.filter(r => (r.tipo || 'Egreso') === 'Egreso');
+
   const byCat = {};
-  list.forEach(r => byCat[r.categoria] = (byCat[r.categoria] || 0) + Number(r.monto));
+  egresosOnly.forEach(r => byCat[r.categoria] = (byCat[r.categoria] || 0) + Number(r.monto));
   const catEntries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
 
   const byMonth = {};
   state.rows.forEach(r => {
     const k = r.fecha.slice(0, 7);
-    byMonth[k] = (byMonth[k] || 0) + Number(r.monto);
+    const isEgreso = (r.tipo || 'Egreso') === 'Egreso';
+    const val = isEgreso ? -Number(r.monto) : Number(r.monto);
+    byMonth[k] = (byMonth[k] || 0) + val;
   });
   const monthEntries = Object.entries(byMonth).sort(([a], [b]) => a.localeCompare(b)).slice(-6);
   const monthLabels = monthEntries.map(([k]) => {
@@ -121,7 +145,7 @@ function renderCharts(list) {
     return new Date(+y, +m - 1, 1).toLocaleDateString("es-DO", { month: "short", year: "2-digit" });
   });
 
-  // Gráfico Circular (Categorías)
+  // Gráfico Circular (Categorías - Solo Egresos)
   const pieData = {
     labels: catEntries.map(e => e[0]),
     datasets: [{
@@ -146,7 +170,7 @@ function renderCharts(list) {
     }
   });
 
-  // Gráfico de Barras (Historial Mensual)
+  // Gráfico de Barras (Historial Mensual Neto - Ingresos - Egresos)
   if (barChart) barChart.destroy();
   barChart = new Chart($("#barChart"), {
     type: "bar",
@@ -154,7 +178,7 @@ function renderCharts(list) {
       labels: monthLabels,
       datasets: [{
         data: monthEntries.map(e => +e[1].toFixed(2)),
-        backgroundColor: INK,
+        backgroundColor: monthEntries.map(e => e[1] >= 0 ? "#388e3c" : "var(--danger)"),
         borderRadius: 6,
         barThickness: 36
       }]
@@ -164,11 +188,11 @@ function renderCharts(list) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ` ${fmtMXN(c.parsed.y)}` } }
+        tooltip: { callbacks: { label: c => ` Balance: ${fmtMXN(c.parsed.y)}` } }
       },
       scales: {
         x: { grid: { display: false }, ticks: { color: INK, font: { size: 12 } } },
-        y: { grid: { color: "rgba(0,0,0,.06)" }, ticks: { color: INK, font: { size: 11 }, callback: v => "$" + (v / 1000).toFixed(0) + "k" } }
+        y: { grid: { color: "rgba(0,0,0,.06)" }, ticks: { color: INK, font: { size: 11 }, callback: v => (v >= 0 ? "+" : "") + "$" + (v / 1000).toFixed(0) + "k" } }
       }
     }
   });
@@ -177,33 +201,42 @@ function renderCharts(list) {
 function renderTable(list, total) {
   const wrap = $("#tableWrap");
   if (!list.length) {
-    wrap.innerHTML = `<div class="empty"><h3>Sin gastos registrados</h3><p>Registra el primer gasto para empezar a llevar el control.</p></div>`;
+    wrap.innerHTML = `<div class="empty"><h3>Sin movimientos registrados</h3><p>Registra el primer movimiento para empezar a llevar el control.</p></div>`;
     return;
   }
   wrap.innerHTML = `
   <div style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th></th>
+        <th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th></th>
       </tr></thead>
       <tbody>
-        ${list.map(r => `
+        ${list.map(r => {
+          const isIngreso = (r.tipo || 'Egreso') === 'Ingreso';
+          const typeLabel = isIngreso ? "Ingreso" : "Egreso";
+          const typeChipColor = isIngreso ? "background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;" : "background:#ffebee;color:#c62828;border:1px solid #ffcdd2;";
+          const catLabel = isIngreso ? "Reposición" : r.categoria;
+          const displayMonto = (isIngreso ? "+" : "-") + fmtMXN(Number(r.monto));
+          const montoStyle = isIngreso ? "color:#2e7d32;font-weight:600;white-space:nowrap;" : "color:var(--ink);font-weight:600;white-space:nowrap;";
+          return `
           <tr>
             <td>${new Date(r.fecha + "T00:00:00").toLocaleDateString("es-DO", { day: "2-digit", month: "short", year: "numeric" })}</td>
-            <td><span class="chip">${r.categoria}</span></td>
-            <td>${escapeHtml(r.descripcion)}${r.notas ? `<div class="note">${escapeHtml(r.notas)}</div>` : ""}</td>
-            <td class="muted">${r.proveedor ? escapeHtml(r.proveedor) : "—"}</td>
-            <td class="muted">${r.metodo_pago}</td>
-            <td class="right" style="font-weight:600;white-space:nowrap">${fmtMXN(Number(r.monto))}</td>
+            <td><span class="chip" style="${typeChipColor}">${typeLabel}</span></td>
+            <td><span class="chip">${catLabel}</span></td>
+            <td>${escapeHtml(r.descripcion)}${r.notas ? `<div class="note">${escapeHtml(r.notes || r.notas)}</div>` : ""}</td>
+            <td class="muted">${isIngreso ? '—' : (r.proveedor ? escapeHtml(r.proveedor) : "—")}</td>
+            <td class="muted">${isIngreso ? 'Efectivo' : r.metodo_pago}</td>
+            <td class="right" style="${montoStyle}">${displayMonto}</td>
             <td style="text-align:center">
-              ${r.evidencia ? `<button class="btn btn-outline view-receipt-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🔍 Ver recibo</button>` : `<span style="color:var(--muted);font-style:italic">Sin recibo</span>`}
+              ${r.evidencia ? `<button class="btn btn-outline view-receipt-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🔍 Ver recibo</button>` : `<span style="color:var(--muted);font-style:italic">—</span>`}
             </td>
             <td><button class="del-btn" data-id="${r.id}" title="Eliminar">🗑</button></td>
-          </tr>`).join("")}
+          </tr>`;
+        }).join("")}
       </tbody>
       <tfoot><tr>
-        <td colspan="5" class="right" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Total</td>
-        <td class="right total">${fmtMXN(total)}</td><td></td><td></td>
+        <td colspan="6" class="right" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Total Gastos (Egresos)</td>
+        <td class="right total" style="color:var(--danger)">${fmtMXN(total)}</td><td></td><td></td>
       </tr></tfoot>
     </table>
   </div>`;
@@ -288,6 +321,47 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#closeModal").addEventListener("click", () => $("#modal").hidden = true);
   $("#cancelBtn").addEventListener("click", () => $("#modal").hidden = true);
   $("#modal").addEventListener("click", e => { if (e.target.id === "modal") $("#modal").hidden = true; });
+
+  // Elementos del formulario para toggling dinámico
+  const typeSelect = $("#typeSelect");
+  const fldMetodo = $("#fldMetodo");
+  const fldCategoria = $("#fldCategoria");
+  const gridEgresoExtra = $("#gridEgresoExtra");
+  const fldEvidencia = $("#fldEvidencia");
+  const inputDescripcion = $("#inputDescripcion");
+
+  typeSelect.addEventListener("change", () => {
+    const isIngreso = typeSelect.value === "Ingreso";
+    if (isIngreso) {
+      // Reposición (Ingreso)
+      fldMetodo.style.display = "none";
+      fldCategoria.style.display = "none";
+      gridEgresoExtra.style.display = "none";
+      fldEvidencia.style.display = "none";
+      inputDescripcion.placeholder = "Ej: Reposición de fondo de caja chica";
+    } else {
+      // Gasto (Egreso)
+      fldMetodo.style.display = "";
+      fldCategoria.style.display = "";
+      gridEgresoExtra.style.display = "";
+      fldEvidencia.style.display = "";
+      inputDescripcion.placeholder = "Ej: Café y azúcar para oficina";
+    }
+  });
+
+  const resetFormLayout = () => {
+    typeSelect.value = "Egreso";
+    fldMetodo.style.display = "";
+    fldCategoria.style.display = "";
+    gridEgresoExtra.style.display = "";
+    fldEvidencia.style.display = "";
+    inputDescripcion.placeholder = "Ej: Café y azúcar para oficina";
+  };
+
+  $("#openModal").addEventListener("click", () => {
+    resetFormLayout();
+    $("#modal").hidden = false;
+  });
 
   // Filtros
   $("#filterMes").addEventListener("change", e => { state.filterMes = e.target.value; render(); });
@@ -393,24 +467,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Registrar gasto
+  // Registrar movimiento
   $("#expenseForm").addEventListener("submit", async e => {
     e.preventDefault();
-    if (!evidenceBase64) {
-      alert("Por favor, capture o suba una foto del recibo como evidencia del gasto.");
-      return;
-    }
-
     const f = new FormData(e.target);
+    const tipoMov = f.get("tipo") || "Egreso";
+    
     const row = {
       fecha: f.get("fecha"),
-      categoria: f.get("categoria"),
-      descripcion: f.get("descripcion").trim(),
-      proveedor: (f.get("proveedor") || "").trim() || null,
+      tipo: tipoMov,
       monto: parseFloat(f.get("monto")),
-      metodo_pago: f.get("metodo_pago"),
+      descripcion: f.get("descripcion").trim(),
       notas: (f.get("notas") || "").trim() || null,
-      evidencia: evidenceBase64
+      categoria: tipoMov === "Egreso" ? f.get("categoria") : "Reposición",
+      metodo_pago: tipoMov === "Egreso" ? f.get("metodo_pago") : "Efectivo",
+      proveedor: tipoMov === "Egreso" ? ((f.get("proveedor") || "").trim() || null) : null,
+      evidencia: tipoMov === "Egreso" ? (evidenceBase64 || null) : null
     };
 
     if (supabaseClient) {
@@ -455,6 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Resetear formulario y estado de evidencia
     e.target.reset();
+    resetFormLayout();
     $("[name=fecha]").value = new Date().toISOString().slice(0, 10);
     evidenceInput.value = "";
     evidenceBase64 = null;

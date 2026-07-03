@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>IVAD · Control de Gastos</title>
-<meta name="description" content="Panel interno para registrar y controlar los gastos de IVAD Home & Goods." />
+<title>IVAD · Caja Chica</title>
+<meta name="description" content="Panel interno para el control de la caja chica de IVAD Home & Goods." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -16,7 +16,7 @@
   <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--paper); display: flex; align-items: center; justify-content: center; z-index: 9999;">
     <div class="card" style="width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--rule); padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
       <img src="/ivad-logo.png" alt="IVAD" style="height: 64px; width: auto; margin-bottom: 20px;" />
-      <h2 class="display sm" style="margin-bottom: 10px; color: var(--ink);">Control de Gastos</h2>
+      <h2 class="display sm" style="margin-bottom: 10px; color: var(--ink);">Caja Chica</h2>
       <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Acceso restringido para personal autorizado.</p>
       
       <div id="loginError" style="display: none; background: var(--danger); color: white; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; text-align: center; font-weight: 600;">
@@ -41,8 +41,8 @@
         <img src="/ivad-logo.png" alt="IVAD" style="height: 64px; width: auto;" />
         <div>
           <div class="tag">CONTROL INTERNO</div>
-          <h1 class="display">Gastos de la Empresa</h1>
-          <p class="subtitle">IVAD Home &amp; Goods · Registro y seguimiento</p>
+          <h1 class="display">Control de Caja Chica</h1>
+          <p class="subtitle">IVAD Home &amp; Goods · Caja Chica y Gastos Menores</p>
         </div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
@@ -51,7 +51,7 @@
         </button>
         <button class="btn btn-primary" id="openModal">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-          Registrar gasto
+          Registrar movimiento
         </button>
       </div>
     </header>
@@ -72,19 +72,19 @@
     <!-- KPIs -->
     <div class="kpis">
       <div class="card kpi kpi-accent">
-        <p class="tag">Gasto total</p>
-        <p class="kpi-value" id="kpiTotal">$0.00</p>
-        <p class="kpi-sub" id="kpiTotalSub">Histórico</p>
+        <p class="tag">Saldo disponible</p>
+        <p class="kpi-value" id="kpiSaldo">RD$ 0.00</p>
+        <p class="kpi-sub">Caja Chica</p>
       </div>
       <div class="card kpi">
-        <p class="tag">Movimientos</p>
-        <p class="kpi-value" id="kpiCount">0</p>
-        <p class="kpi-sub">Registros</p>
+        <p class="tag">Total Egresos</p>
+        <p class="kpi-value" id="kpiEgresos" style="color: var(--danger);">RD$ 0.00</p>
+        <p class="kpi-sub" id="kpiEgresosCount">0 Gastos</p>
       </div>
       <div class="card kpi">
-        <p class="tag">Gasto promedio</p>
-        <p class="kpi-value" id="kpiAvg">$0.00</p>
-        <p class="kpi-sub">Por movimiento</p>
+        <p class="tag">Total Ingresos</p>
+        <p class="kpi-value" id="kpiIngresos" style="color: #388e3c;">RD$ 0.00</p>
+        <p class="kpi-sub" id="kpiIngresosCount">0 Reposiciones</p>
       </div>
     </div>
 
@@ -95,7 +95,7 @@
         <div class="chart-box"><canvas id="pieChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="tag mb">Gasto por mes · últimos 6</div>
+        <div class="tag mb">Historial de Caja Chica (Neto)</div>
         <div class="chart-box"><canvas id="barChart"></canvas></div>
       </div>
     </div>
@@ -106,7 +106,7 @@
       <div id="tableWrap"></div>
     </div>
 
-    <p class="footer">IVAD Home &amp; Goods · Panel interno de gastos</p>
+    <p class="footer">IVAD Home &amp; Goods · Control de Caja Chica</p>
   </div>
 </main>
 
@@ -116,36 +116,44 @@
     <div class="modal-head">
       <div>
         <div class="tag">NUEVO REGISTRO</div>
-        <h2 class="display sm">Registrar gasto</h2>
+        <h2 class="display sm">Registrar movimiento</h2>
       </div>
       <button class="icon-btn" id="closeModal" aria-label="Cerrar">✕</button>
     </div>
     <form id="expenseForm" class="modal-body">
       <div class="grid2">
+        <label class="fld"><span>Tipo de Movimiento</span>
+          <select name="tipo" id="typeSelect">
+            <option value="Egreso">Gasto (Egreso)</option>
+            <option value="Ingreso">Reposición (Ingreso)</option>
+          </select>
+        </label>
         <label class="fld"><span>Fecha</span><input type="date" name="fecha" required /></label>
-        <label class="fld"><span>Monto (RD$)</span><input type="number" step="0.01" min="0" name="monto" placeholder="0.00" required /></label>
       </div>
-      <label class="fld"><span>Categoría</span>
+      <div class="grid2">
+        <label class="fld"><span>Monto (RD$)</span><input type="number" step="0.01" min="0" name="monto" placeholder="0.00" required /></label>
+        <label class="fld" id="fldMetodo"><span>Método de pago</span><select name="metodo_pago" id="metSelect"></select></label>
+      </div>
+      <label class="fld" id="fldCategoria"><span>Categoría</span>
         <select name="categoria" id="catSelect"></select>
       </label>
       <label class="fld"><span>Descripción</span>
-        <input type="text" name="descripcion" maxlength="200" placeholder="Ej: Renovación dominio ivad.com.mx" required />
+        <input type="text" name="descripcion" id="inputDescripcion" maxlength="200" placeholder="Ej: Café y azúcar para oficina" required />
       </label>
-      <div class="grid2">
-        <label class="fld"><span>Proveedor</span><input type="text" name="proveedor" maxlength="120" placeholder="Opcional" /></label>
-        <label class="fld"><span>Método de pago</span><select name="metodo_pago" id="metSelect"></select></label>
+      <div class="grid2" id="gridEgresoExtra">
+        <label class="fld" id="fldProveedor"><span>Proveedor</span><input type="text" name="proveedor" id="inputProveedor" maxlength="120" placeholder="Opcional" /></label>
       </div>
       <label class="fld"><span>Notas</span><textarea name="notas" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
       
-      <!-- Evidencia / Recibo (Obligatorio) -->
-      <label class="fld">
-        <span>Evidencia / Recibo (Obligatorio)</span>
+      <!-- Evidencia / Recibo (Opcional) -->
+      <label class="fld" id="fldEvidencia">
+        <span>Evidencia / Recibo (Opcional)</span>
         <div id="evidenceArea" style="border: 2px dashed var(--rule); border-radius: var(--radius); padding: 15px; text-align: center; cursor: pointer; background: var(--paper); transition: all 0.2s;">
           <input type="file" id="evidenceInput" accept="image/*" capture="environment" style="display: none;" />
           <div id="evidenceEmpty">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gold); margin-bottom: 5px; display: inline-block;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             <div style="font-weight: 500; font-size: 13px; color: var(--ink);">Subir Recibo o Tomar Foto</div>
-            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Formatos JPG, PNG. Obligatorio.</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Formatos JPG, PNG. Opcional.</div>
           </div>
           <div id="evidencePreview" style="display: none; align-items: center; justify-content: space-between; gap: 10px; text-align: left;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -162,7 +170,7 @@
 
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" id="cancelBtn">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Guardar gasto</button>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
       </div>
     </form>
   </div>
