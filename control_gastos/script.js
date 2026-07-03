@@ -109,7 +109,7 @@ function render() {
   const saldo = totalIngresos - totalEgresos;
 
   $("#kpiSaldo").textContent = fmtMXN(saldo);
-  $("#kpiSaldo").style.color = saldo >= 0 ? "#1a2a5e" : "var(--danger)";
+  $("#kpiSaldo").style.color = "#1a2a5e";
   $("#kpiEgresos").textContent = fmtMXN(totalEgresos);
   $("#kpiEgresosCount").textContent = `${countEgresos} Gastos`;
   $("#kpiIngresos").textContent = fmtMXN(totalIngresos);
@@ -178,7 +178,7 @@ function renderCharts(list) {
       labels: monthLabels,
       datasets: [{
         data: monthEntries.map(e => +e[1].toFixed(2)),
-        backgroundColor: monthEntries.map(e => e[1] >= 0 ? "#388e3c" : "var(--danger)"),
+        backgroundColor: monthEntries.map(e => e[1] >= 0 ? "#c9a961" : "#1a2a5e"),
         borderRadius: 6,
         barThickness: 36
       }]
@@ -192,7 +192,7 @@ function renderCharts(list) {
       },
       scales: {
         x: { grid: { display: false }, ticks: { color: INK, font: { size: 12 } } },
-        y: { grid: { color: "rgba(0,0,0,.06)" }, ticks: { color: INK, font: { size: 11 }, callback: v => (v >= 0 ? "+" : "") + "$" + (v / 1000).toFixed(0) + "k" } }
+        y: { grid: { color: "rgba(0,0,0,.06)" }, ticks: { color: INK, font: { size: 11 }, callback: v => (v >= 0 ? "+" : "") + "RD$ " + (v / 1000).toFixed(0) + "k" } }
       }
     }
   });
@@ -214,10 +214,10 @@ function renderTable(list, total) {
         ${list.map(r => {
           const isIngreso = (r.tipo || 'Egreso') === 'Ingreso';
           const typeLabel = isIngreso ? "Ingreso" : "Egreso";
-          const typeChipColor = isIngreso ? "background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;" : "background:#ffebee;color:#c62828;border:1px solid #ffcdd2;";
+          const typeChipColor = isIngreso ? "background:#fbf8f0;color:#a67c1e;border:1px solid #e9dcb9;" : "background:#ebedf2;color:#1a2a5e;border:1px solid #d1d5e3;";
           const catLabel = isIngreso ? "Reposición" : r.categoria;
           const displayMonto = (isIngreso ? "+" : "-") + fmtMXN(Number(r.monto));
-          const montoStyle = isIngreso ? "color:#2e7d32;font-weight:600;white-space:nowrap;" : "color:var(--ink);font-weight:600;white-space:nowrap;";
+          const montoStyle = isIngreso ? "color:#a67c1e;font-weight:600;white-space:nowrap;" : "color:var(--ink);font-weight:600;white-space:nowrap;";
           return `
           <tr>
             <td>${new Date(r.fecha + "T00:00:00").toLocaleDateString("es-DO", { day: "2-digit", month: "short", year: "numeric" })}</td>
