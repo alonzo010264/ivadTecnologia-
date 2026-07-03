@@ -11,6 +11,27 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Login Overlay for Restricted Access -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="form-card" style="width: 100%; max-width: 400px; text-align: center; box-shadow: var(--shadow); border: 1px solid var(--rule);">
+      <img src="ivad-logo.png" alt="IVAD" style="height: 45px; margin-bottom: 20px;" />
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 10px; color: var(--ink);">Panel de Tecnología</h2>
+      <p style="color: var(--ink-soft); font-size: 14px; margin-bottom: 24px;">Acceso restringido para personal autorizado.</p>
+      
+      <div id="loginError" style="display: none; background: var(--danger); color: white; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 16px;">
+        Contraseña incorrecta
+      </div>
+      
+      <form id="loginForm">
+        <div class="form-group" style="text-align: left;">
+          <label for="adminPass">Contraseña de Administrador</label>
+          <input type="password" id="adminPass" class="form-control" placeholder="Ingrese la contraseña..." required />
+        </div>
+        <button type="submit" class="btn">Entrar al Panel</button>
+      </form>
+    </div>
+  </div>
+
   <header class="page-header">
     <img src="ivad-logo.png" alt="IVAD Home & Goods" />
     <div style="text-align: right;">
@@ -265,11 +286,41 @@
       }
     };
 
-    // Listeners Realtime
-    supabase.channel('tec_correos').on('postgres_changes', { event: '*', schema: 'public', table: 'gestion_correos' }, () => { loadData(); }).subscribe();
-    supabase.channel('tec_sug').on('postgres_changes', { event: '*', schema: 'public', table: 'sugerencias_empleados' }, () => { loadData(); }).subscribe();
+    // Auth Check using Web Crypto SHA-256
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-    loadData();
+    const correctHash = '6276637acb97c8618ebee4001af222c29bf2771c6ef36d7b6ccabec9c7f096f0'; // SHA-256 of ivadAdmin2026
+
+    function startDashboard() {
+      // Listeners Realtime
+      supabase.channel('tec_correos').on('postgres_changes', { event: '*', schema: 'public', table: 'gestion_correos' }, () => { loadData(); }).subscribe();
+      supabase.channel('tec_sug').on('postgres_changes', { event: '*', schema: 'public', table: 'sugerencias_empleados' }, () => { loadData(); }).subscribe();
+      loadData();
+    }
+
+    if (sessionStorage.getItem('ivad_ti_auth') === 'true') {
+      $('loginOverlay').style.display = 'none';
+      startDashboard();
+    } else {
+      $('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const pass = $('adminPass').value;
+        const hash = await sha256(pass);
+        if (hash === correctHash) {
+          sessionStorage.setItem('ivad_ti_auth', 'true');
+          $('loginOverlay').style.display = 'none';
+          startDashboard();
+        } else {
+          $('loginError').style.display = 'block';
+          $('adminPass').value = '';
+        }
+      });
+    }
   </script>
 </body>
 </html>
