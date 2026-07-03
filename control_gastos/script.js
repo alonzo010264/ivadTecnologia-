@@ -296,31 +296,30 @@ function imprimirComprobante(row) {
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Comprobante CC-${seqId}</title>
+  <title>Recibo CC-${seqId}</title>
   <style>
     body { font-family: 'Inter', sans-serif; color: #1a2a5e; margin: 0; padding: 40px; background: #fff; }
-    .ticket { border: 1px solid #e6e1d6; border-radius: 8px; padding: 30px; max-width: 800px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e6e1d6; padding-bottom: 20px; margin-bottom: 20px; }
+    .ticket { max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a2a5e; padding-bottom: 20px; margin-bottom: 20px; }
     .header img { height: 60px; width: auto; }
     .header-title { text-align: right; }
     .header-title h1 { font-size: 20px; margin: 0 0 5px 0; color: #1a2a5e; font-family: 'Playfair Display', serif; }
     .header-title p { font-size: 11px; color: #6b6a63; margin: 0; }
-    .voucher-num { border: 1px solid #1a2a5e; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 5px; font-size: 12px; }
-    .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #e6e1d6; padding-bottom: 15px; }
+    .voucher-num { font-weight: bold; display: inline-block; margin-top: 5px; font-size: 13px; color: #1a2a5e; }
+    .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #1a2a5e; padding-bottom: 15px; }
     .meta-item { text-align: center; }
     .meta-item .label { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6a63; margin-bottom: 4px; }
     .meta-item .val { font-size: 12px; font-weight: 600; }
     .section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6a63; border-bottom: 1px solid #e6e1d6; padding-bottom: 6px; margin-bottom: 15px; }
-    .details-box { border: 1px solid #e6e1d6; border-radius: 6px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1fr; }
-    .detail-cell { padding: 12px 15px; border-bottom: 1px solid #e6e1d6; }
+    .details-box { margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .detail-cell { padding: 5px 0; }
     .detail-cell.full { grid-column: span 2; }
-    .detail-cell.no-border { border-bottom: none; }
     .detail-cell .label { font-size: 9px; font-weight: 700; color: #6b6a63; text-transform: uppercase; margin-bottom: 4px; }
     .detail-cell .val { font-size: 13px; font-weight: 500; }
-    .evidence-area { border: 1px solid #e6e1d6; border-radius: 6px; padding: 20px; text-align: center; margin-bottom: 25px; }
-    .evidence-area img { max-height: 350px; max-width: 100%; object-fit: contain; border-radius: 4px; }
-    .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; margin-bottom: 30px; }
-    .signature-line { border-top: 1px solid #e6e1d6; text-align: center; padding-top: 8px; font-size: 11px; color: #6b6a63; }
+    .evidence-area { text-align: center; margin-bottom: 25px; padding: 10px 0; }
+    .evidence-area img { max-height: 350px; max-width: 100%; object-fit: contain; }
+    .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 60px; margin-bottom: 30px; }
+    .signature-line { border-top: 1px solid #1a2a5e; text-align: center; padding-top: 8px; font-size: 11px; color: #1a2a5e; font-weight: 500; }
     .footer { text-align: center; font-size: 9px; color: #6b6a63; border-top: 1px solid #e6e1d6; padding-top: 15px; margin-top: 20px; }
     @media print {
       body { padding: 0; }
@@ -333,9 +332,9 @@ function imprimirComprobante(row) {
     <div class="header">
       <img src="https://gestion.ivadsrl.com/ivad-logo.png" alt="IVAD">
       <div class="header-title">
-        <h1>REPORTE DE CAJA CHICA</h1>
+        <h1>RECIBO DE CAJA CHICA</h1>
         <p>Fecha de registro: ${fechaRegistro}</p>
-        <div class="voucher-num">N° COMPROBANTE: CC-${seqId}</div>
+        <div class="voucher-num">N° RECIBO: CC-${seqId}</div>
       </div>
     </div>
     
@@ -353,8 +352,8 @@ function imprimirComprobante(row) {
         <div class="val">${metodo}</div>
       </div>
       <div class="meta-item">
-        <div class="label">Categoría</div>
-        <div class="val">${categoria}</div>
+        <div class="label">N° Recibo</div>
+        <div class="val">CC-${seqId}</div>
       </div>
     </div>
 
@@ -372,7 +371,7 @@ function imprimirComprobante(row) {
         <div class="label">Descripción</div>
         <div class="val">${descripcion}</div>
       </div>
-      <div class="detail-cell full no-border">
+      <div class="detail-cell full">
         <div class="label">Notas / Observaciones</div>
         <div class="val">${notas}</div>
       </div>
