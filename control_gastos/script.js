@@ -301,7 +301,7 @@ function imprimirComprobante(row) {
     body { font-family: 'Inter', sans-serif; color: #1a2a5e; margin: 0; padding: 40px; background: #fff; }
     .ticket { max-width: 800px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a2a5e; padding-bottom: 20px; margin-bottom: 20px; }
-    .header img { height: 60px; width: auto; }
+    .header img { height: 100px; width: auto; }
     .header-title { text-align: right; }
     .header-title h1 { font-size: 20px; margin: 0 0 5px 0; color: #1a2a5e; font-family: 'Playfair Display', serif; }
     .header-title p { font-size: 11px; color: #6b6a63; margin: 0; }
