@@ -184,7 +184,7 @@ function renderTable(list, total) {
   <div style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th></th>
+        <th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th></th>
       </tr></thead>
       <tbody>
         ${list.map(r => `
@@ -195,15 +195,29 @@ function renderTable(list, total) {
             <td class="muted">${r.proveedor ? escapeHtml(r.proveedor) : "—"}</td>
             <td class="muted">${r.metodo_pago}</td>
             <td class="right" style="font-weight:600;white-space:nowrap">${fmtMXN(Number(r.monto))}</td>
+            <td style="text-align:center">
+              ${r.evidencia ? `<button class="btn btn-outline view-receipt-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🔍 Ver recibo</button>` : `<span style="color:var(--muted);font-style:italic">Sin recibo</span>`}
+            </td>
             <td><button class="del-btn" data-id="${r.id}" title="Eliminar">🗑</button></td>
           </tr>`).join("")}
       </tbody>
       <tfoot><tr>
         <td colspan="5" class="right" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Total</td>
-        <td class="right total">${fmtMXN(total)}</td><td></td>
+        <td class="right total">${fmtMXN(total)}</td><td></td><td></td>
       </tr></tfoot>
     </table>
   </div>`;
+
+  wrap.querySelectorAll(".view-receipt-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const row = state.rows.find(r => r.id === id);
+      if (row && row.evidencia) {
+        $("#fullReceiptImg").src = row.evidencia;
+        $("#receiptModal").hidden = false;
+      }
+    });
+  });
 
   wrap.querySelectorAll(".del-btn").forEach(b => {
     b.addEventListener("click", async () => {
@@ -286,9 +300,107 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   });
 
+  // Lógica de Evidencia / Captura de Recibo
+  let evidenceBase64 = null;
+  const evidenceArea = $("#evidenceArea");
+  const evidenceInput = $("#evidenceInput");
+  const evidenceEmpty = $("#evidenceEmpty");
+  const evidencePreview = $("#evidencePreview");
+  const evidenceThumb = $("#evidenceThumb");
+  const evidenceSize = $("#evidenceSize");
+  const removeEvidenceBtn = $("#removeEvidenceBtn");
+
+  evidenceArea.addEventListener("click", e => {
+    if (e.target !== removeEvidenceBtn && !removeEvidenceBtn.contains(e.target)) {
+      evidenceInput.click();
+    }
+  });
+
+  evidenceInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    evidenceEmpty.style.display = "none";
+    evidencePreview.style.display = "flex";
+    evidenceSize.textContent = "Comprimiendo recibo...";
+    evidenceThumb.style.opacity = "0.4";
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1000;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convertir a base64 JPEG con calidad 0.7 para no saturar la base de datos
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+        evidenceBase64 = compressedDataUrl;
+
+        evidenceThumb.src = compressedDataUrl;
+        evidenceThumb.style.opacity = "1";
+        
+        const sizeInKb = Math.round((compressedDataUrl.length * 3) / 4 / 1024);
+        evidenceSize.textContent = `${sizeInKb} KB (Comprimido)`;
+        evidenceArea.style.borderColor = "var(--gold)";
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeEvidenceBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    evidenceInput.value = "";
+    evidenceBase64 = null;
+    evidenceThumb.src = "";
+    evidenceEmpty.style.display = "block";
+    evidencePreview.style.display = "none";
+    evidenceArea.style.borderColor = "var(--rule)";
+  });
+
+  // Modal para ver el Recibo en Grande
+  const receiptModal = $("#receiptModal");
+  const closeReceiptModal = $("#closeReceiptModal");
+  const fullReceiptImg = $("#fullReceiptImg");
+
+  closeReceiptModal.addEventListener("click", () => {
+    receiptModal.hidden = true;
+    fullReceiptImg.src = "";
+  });
+  receiptModal.addEventListener("click", e => {
+    if (e.target.id === "receiptModal") {
+      receiptModal.hidden = true;
+      fullReceiptImg.src = "";
+    }
+  });
+
   // Registrar gasto
   $("#expenseForm").addEventListener("submit", async e => {
     e.preventDefault();
+    if (!evidenceBase64) {
+      alert("Por favor, capture o suba una foto del recibo como evidencia del gasto.");
+      return;
+    }
+
     const f = new FormData(e.target);
     const row = {
       fecha: f.get("fecha"),
@@ -297,7 +409,8 @@ document.addEventListener("DOMContentLoaded", () => {
       proveedor: (f.get("proveedor") || "").trim() || null,
       monto: parseFloat(f.get("monto")),
       metodo_pago: f.get("metodo_pago"),
-      notas: (f.get("notas") || "").trim() || null
+      notas: (f.get("notas") || "").trim() || null,
+      evidencia: evidenceBase64
     };
 
     if (supabaseClient) {
@@ -339,8 +452,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     state.rows.sort((a, b) => b.fecha.localeCompare(a.fecha) || b.created_at.localeCompare(a.created_at));
     save();
+    
+    // Resetear formulario y estado de evidencia
     e.target.reset();
     $("[name=fecha]").value = new Date().toISOString().slice(0, 10);
+    evidenceInput.value = "";
+    evidenceBase64 = null;
+    evidenceThumb.src = "";
+    evidenceEmpty.style.display = "block";
+    evidencePreview.style.display = "none";
+    evidenceArea.style.borderColor = "var(--rule)";
+    
     $("#modal").hidden = true;
     render();
   });

@@ -11,8 +11,12 @@ CREATE TABLE IF NOT EXISTS public.control_gastos (
     descripcion TEXT NOT NULL,
     proveedor TEXT,
     metodo_pago TEXT NOT NULL,
-    notas TEXT
+    notas TEXT,
+    evidencia TEXT -- Imagen del recibo / factura en Base64
 );
+
+-- Si ya tienes la tabla creada, ejecuta esta sentencia en tu SQL Editor de Supabase para agregar la columna:
+-- ALTER TABLE public.control_gastos ADD COLUMN IF NOT EXISTS evidencia TEXT;
 
 -- 2. Habilitar la seguridad a nivel de filas (Row Level Security - RLS) si es requerido
 -- ALTER TABLE public.control_gastos ENABLE ROW LEVEL SECURITY;

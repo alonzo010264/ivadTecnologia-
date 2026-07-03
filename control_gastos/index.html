@@ -136,11 +136,51 @@
         <label class="fld"><span>Método de pago</span><select name="metodo_pago" id="metSelect"></select></label>
       </div>
       <label class="fld"><span>Notas</span><textarea name="notas" rows="2" maxlength="500" placeholder="Opcional"></textarea></label>
+      
+      <!-- Evidencia / Recibo (Obligatorio) -->
+      <label class="fld">
+        <span>Evidencia / Recibo (Obligatorio)</span>
+        <div id="evidenceArea" style="border: 2px dashed var(--rule); border-radius: var(--radius); padding: 15px; text-align: center; cursor: pointer; background: var(--paper); transition: all 0.2s;">
+          <input type="file" id="evidenceInput" accept="image/*" capture="environment" style="display: none;" />
+          <div id="evidenceEmpty">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gold); margin-bottom: 5px; display: inline-block;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <div style="font-weight: 500; font-size: 13px; color: var(--ink);">Subir Recibo o Tomar Foto</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Formatos JPG, PNG. Obligatorio.</div>
+          </div>
+          <div id="evidencePreview" style="display: none; align-items: center; justify-content: space-between; gap: 10px; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <img id="evidenceThumb" src="" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid var(--rule);" />
+              <div>
+                <div style="font-weight: 600; font-size: 13px; color: var(--ink);">Recibo cargado</div>
+                <div id="evidenceSize" style="font-size: 11px; color: var(--muted);">0 KB</div>
+              </div>
+            </div>
+            <button type="button" id="removeEvidenceBtn" style="background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; padding: 5px;" title="Eliminar">🗑</button>
+          </div>
+        </div>
+      </label>
+
       <div class="modal-actions">
         <button type="button" class="btn btn-outline" id="cancelBtn">Cancelar</button>
         <button type="submit" class="btn btn-primary">Guardar gasto</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal para ver el Recibo en Grande -->
+<div class="modal-overlay" id="receiptModal" hidden>
+  <div class="modal" style="max-width: 500px;">
+    <div class="modal-head">
+      <div>
+        <div class="tag">EVIDENCIA</div>
+        <h2 class="display sm">Recibo / Factura</h2>
+      </div>
+      <button class="icon-btn" id="closeReceiptModal" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" style="text-align: center; padding: 20px 0;">
+      <img id="fullReceiptImg" src="" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 6px; border: 1px solid var(--rule);" />
+    </div>
   </div>
 </div>
 
