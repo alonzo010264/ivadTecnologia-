@@ -67,47 +67,105 @@
     <div class="dept-tag">Tecnología e Informática</div>
   </header>
 
-  <main class="container" style="max-width: 1000px; margin-top: 80px;">
-    <div style="text-align: center; margin-bottom: 50px;">
-      <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; margin-bottom: 12px;">Portal de Servicios de TI</h1>
+  <main class="container" style="max-width: 1000px; margin-top: 50px;">
+    <div style="text-align: center; margin-bottom: 40px;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 36px; margin-bottom: 12px;">Portal de Sistemas y Servicios</h1>
       <p style="color: var(--ink-soft); font-size: 16px; max-width: 600px; margin: 0 auto;">
-        Bienvenido al portal oficial del departamento de Tecnología. Desde aquí puedes realizar solicitudes de TI y acceder a los buzones y paneles administrativos.
+        Acceso centralizado a todos los formularios de solicitud y paneles de administración de IVAD Home & Goods.
       </p>
     </div>
 
-    <div class="portal-grid">
-      <!-- Tarjeta 1: Solicitud de Correos -->
-      <a href="solicitud_correo" class="portal-card">
-        <div>
-          <h2>Solicitud de Correos</h2>
-          <p>Formulario oficial para solicitar la creación de cuentas de correo institucionales (Altas) o eliminación de cuentas sin uso (Bajas).</p>
-        </div>
-        <div class="action-link">
-          Realizar solicitud &rarr;
-        </div>
-      </a>
+    <!-- SECCIÓN DE FORMULARIOS -->
+    <div style="margin-top: 30px;">
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; border-bottom: 2px solid var(--rule); padding-bottom: 8px; color: var(--ink); margin-bottom: 20px;">📋 Formularios de Solicitud</h2>
+      <div class="portal-grid" style="margin-top: 10px;">
+        
+        <!-- Tarjeta: Solicitud de Permisos -->
+        <a href="https://recursohumanos.ivadsrl.com/" target="_blank" class="portal-card">
+          <div>
+            <h2>Solicitud de Permiso (RH)</h2>
+            <p>Formulario para solicitar permisos, inasistencias justificadas o programar vacaciones del personal de IVAD.</p>
+          </div>
+          <div class="action-link">
+            Llenar solicitud &rarr;
+          </div>
+        </a>
 
-      <!-- Tarjeta 2: Buzón de Sugerencias -->
-      <a href="buzon" class="portal-card">
-        <div>
-          <h2>Buzón de Sugerencias</h2>
-          <p>Espacio digital para que los colaboradores de IVAD envíen sugerencias, quejas o propuestas de mejora de manera confidencial o anónima.</p>
-        </div>
-        <div class="action-link">
-          Enviar sugerencia &rarr;
-        </div>
-      </a>
+        <!-- Tarjeta: Solicitud de Correos -->
+        <a href="solicitud_correo" class="portal-card">
+          <div>
+            <h2>Solicitud de Correo (TI)</h2>
+            <p>Solicita la creación de cuentas de correo institucionales (Altas) o la eliminación de cuentas (Bajas).</p>
+          </div>
+          <div class="action-link">
+            Realizar solicitud &rarr;
+          </div>
+        </a>
 
-      <!-- Tarjeta 3: Solicitar Permiso -->
-      <a href="https://recursohumanos.ivadsrl.com/" class="portal-card">
-        <div>
-          <h2>Solicitar Permiso</h2>
-          <p>Formulario oficial para registrar solicitudes de permisos de salida, inasistencias o vacaciones para colaboradores de IVAD.</p>
-        </div>
-        <div class="action-link">
-          Solicitar permiso &rarr;
-        </div>
-      </a>
+        <!-- Tarjeta: Buzón de Sugerencias -->
+        <a href="buzon" class="portal-card">
+          <div>
+            <h2>Buzón de Sugerencias</h2>
+            <p>Envía tus sugerencias, comentarios, quejas o propuestas de mejora de forma confidencial o anónima.</p>
+          </div>
+          <div class="action-link">
+            Enviar sugerencia &rarr;
+          </div>
+        </a>
+
+        <!-- Tarjeta: Satisfacción de Cliente -->
+        <a href="https://satisfaccionalcliente.ivadsrl.com" target="_blank" class="portal-card">
+          <div>
+            <h2>Satisfacción al Cliente</h2>
+            <p>Formulario de evaluación del servicio al cliente. Mide la calidad de atención brindada en tienda.</p>
+          </div>
+          <div class="action-link">
+            Ver encuesta &rarr;
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE ADMINISTRACIÓN -->
+    <div style="margin-top: 50px; margin-bottom: 50px;">
+      <h2 style="font-family: 'Playfair Display', serif; font-size: 24px; border-bottom: 2px solid var(--rule); padding-bottom: 8px; color: var(--ink); margin-bottom: 20px;">🔐 Paneles de Administración (Acceso Autorizado)</h2>
+      <div class="portal-grid" style="margin-top: 10px;">
+
+        <!-- Tarjeta: Admin RH -->
+        <a href="https://recursohumanos.ivadsrl.com/admin" target="_blank" class="portal-card" style="border-left: 4px solid #0f172a;">
+          <div>
+            <h2>Admin Recursos Humanos</h2>
+            <p>Gestión y aprobación de solicitudes de permisos y vacaciones enviadas por los colaboradores.</p>
+          </div>
+          <div class="action-link" style="color: #0f172a;">
+            Entrar al panel &rarr;
+          </div>
+        </a>
+
+        <!-- Tarjeta: Admin TI -->
+        <a href="panel" class="portal-card" style="border-left: 4px solid var(--primary);">
+          <div>
+            <h2>Admin Tecnología (TI)</h2>
+            <p>Monitoreo y administración de las sugerencias de los colaboradores y control de solicitudes de correo.</p>
+          </div>
+          <div class="action-link">
+            Entrar al panel &rarr;
+          </div>
+        </a>
+
+        <!-- Tarjeta: Admin Satisfacción -->
+        <a href="https://satisfaccionalcliente.ivadsrl.com/panel" target="_blank" class="portal-card" style="border-left: 4px solid #0284c7;">
+          <div>
+            <h2>Admin Satisfacción</h2>
+            <p>Dashboard de métricas, estadísticas, gráficos y respuestas de la encuesta de satisfacción.</p>
+          </div>
+          <div class="action-link" style="color: #0284c7;">
+            Ver gráficos &rarr;
+          </div>
+        </a>
+
+      </div>
     </div>
   </main>
 </body>
