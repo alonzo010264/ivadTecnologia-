@@ -267,6 +267,74 @@ function renderTable(list, total) {
       }
     });
   });
+
+  wrap.querySelectorAll(".edit-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const row = state.rows.find(r => r.id === id);
+      if (row) {
+        state.editingId = row.id;
+        $("#modalTag").textContent = "EDITAR REGISTRO";
+        $("#modalTitle").textContent = "Editar movimiento";
+        $("#saveBtn").textContent = "Guardar cambios";
+        
+        // Cargar datos
+        const f = $("#expenseForm");
+        f.querySelector("[name=fecha]").value = row.fecha;
+        $("#typeSelect").value = row.tipo || "Egreso";
+        $("#typeSelect").dispatchEvent(new Event("change"));
+        
+        f.querySelector("[name=monto]").value = row.monto;
+        f.querySelector("[name=descripcion]").value = row.descripcion;
+        f.querySelector("[name=notas]").value = row.notas || "";
+        
+        if ((row.tipo || "Egreso") === "Egreso") {
+          f.querySelector("[name=categoria]").value = row.categoria;
+          f.querySelector("[name=metodo_pago]").value = row.metodo_pago;
+          f.querySelector("[name=proveedor]").value = row.proveedor || "";
+        }
+        
+        // Evidencia / Recibo preview
+        if (row.evidencia) {
+          evidenceBase64 = row.evidencia;
+          evidenceEmpty.style.display = "none";
+          evidencePreview.style.display = "flex";
+          evidenceThumb.src = row.evidencia;
+          const sizeInKb = Math.round((row.evidencia.length * 3) / 4 / 1024);
+          evidenceSize.textContent = `${sizeInKb} KB (Comprimido)`;
+          evidenceArea.style.borderColor = "var(--gold)";
+        } else {
+          evidenceInput.value = "";
+          evidenceBase64 = null;
+          evidenceThumb.src = "";
+          evidenceEmpty.style.display = "block";
+          evidencePreview.style.display = "none";
+          evidenceArea.style.borderColor = "var(--rule)";
+        }
+        
+        $("#modal").hidden = false;
+      }
+    });
+  });
+
+  wrap.querySelectorAll(".del-btn").forEach(b => {
+    b.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar este registro? Esta acción no se puede deshacer.")) return;
+      const id = b.dataset.id;
+      if (supabaseClient && id.includes("-")) {
+        try {
+          const { error } = await supabaseClient.from('control_gastos').delete().eq('id', id);
+          if (error) throw error;
+        } catch (err) {
+          alert("Error al eliminar en la base de datos: " + err.message);
+          return;
+        }
+      }
+      state.rows = state.rows.filter(r => r.id !== id);
+      save();
+      render();
+    });
+  });
 }
 
 function imprimirComprobante(row) {
@@ -407,75 +475,6 @@ function imprimirComprobante(row) {
 </html>
   `);
   w.document.close();
-}
-
-  wrap.querySelectorAll(".edit-btn").forEach(b => {
-    b.addEventListener("click", () => {
-      const id = b.dataset.id;
-      const row = state.rows.find(r => r.id === id);
-      if (row) {
-        state.editingId = row.id;
-        $("#modalTag").textContent = "EDITAR REGISTRO";
-        $("#modalTitle").textContent = "Editar movimiento";
-        $("#saveBtn").textContent = "Guardar cambios";
-        
-        // Cargar datos
-        const f = $("#expenseForm");
-        f.querySelector("[name=fecha]").value = row.fecha;
-        $("#typeSelect").value = row.tipo || "Egreso";
-        $("#typeSelect").dispatchEvent(new Event("change"));
-        
-        f.querySelector("[name=monto]").value = row.monto;
-        f.querySelector("[name=descripcion]").value = row.descripcion;
-        f.querySelector("[name=notas]").value = row.notas || "";
-        
-        if ((row.tipo || "Egreso") === "Egreso") {
-          f.querySelector("[name=categoria]").value = row.categoria;
-          f.querySelector("[name=metodo_pago]").value = row.metodo_pago;
-          f.querySelector("[name=proveedor]").value = row.proveedor || "";
-        }
-        
-        // Evidencia / Recibo preview
-        if (row.evidencia) {
-          evidenceBase64 = row.evidencia;
-          evidenceEmpty.style.display = "none";
-          evidencePreview.style.display = "flex";
-          evidenceThumb.src = row.evidencia;
-          const sizeInKb = Math.round((row.evidencia.length * 3) / 4 / 1024);
-          evidenceSize.textContent = `${sizeInKb} KB (Comprimido)`;
-          evidenceArea.style.borderColor = "var(--gold)";
-        } else {
-          evidenceInput.value = "";
-          evidenceBase64 = null;
-          evidenceThumb.src = "";
-          evidenceEmpty.style.display = "block";
-          evidencePreview.style.display = "none";
-          evidenceArea.style.borderColor = "var(--rule)";
-        }
-        
-        $("#modal").hidden = false;
-      }
-    });
-  });
-
-  wrap.querySelectorAll(".del-btn").forEach(b => {
-    b.addEventListener("click", async () => {
-      if (!confirm("¿Eliminar este registro? Esta acción no se puede deshacer.")) return;
-      const id = b.dataset.id;
-      if (supabaseClient && id.includes("-")) {
-        try {
-          const { error } = await supabaseClient.from('control_gastos').delete().eq('id', id);
-          if (error) throw error;
-        } catch (err) {
-          alert("Error al eliminar en la base de datos: " + err.message);
-          return;
-        }
-      }
-      state.rows = state.rows.filter(r => r.id !== id);
-      save();
-      render();
-    });
-  });
 }
 
 function escapeHtml(s) {
