@@ -20,7 +20,7 @@ const STORAGE_KEY = "ivad_expenses_v1";
 const fmtMXN = n => new Intl.NumberFormat("es-DO", { style: "currency", currency: "DOP", minimumFractionDigits: 2 }).format(n || 0);
 const $ = s => document.querySelector(s);
 
-let state = { rows: [], filterMes: "", filterCat: "" };
+let state = { rows: [], filterMes: "", filterCat: "", editingId: null };
 let pieChart, barChart;
 
 // Inicialización de Supabase
@@ -117,7 +117,7 @@ function render() {
   $("#clearFilters").style.display = (state.filterMes || state.filterCat) ? "" : "none";
 
   renderCharts(list);
-  renderTable(list, totalEgresos); // Pasar totalEgresos para el pie de la tabla
+  renderTable(list, totalEgresos);
 }
 
 function renderCharts(list) {
@@ -208,7 +208,7 @@ function renderTable(list, total) {
   <div style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th>
+        <th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th style="text-align:center">Acciones</th>
       </tr></thead>
       <tbody>
         ${list.map(r => {
@@ -230,18 +230,19 @@ function renderTable(list, total) {
             <td style="text-align:center">
               ${r.evidencia ? `<button class="btn btn-outline view-receipt-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🔍 Ver recibo</button>` : `<span style="color:var(--muted);font-style:italic">—</span>`}
             </td>
+            <td style="text-align:center; white-space:nowrap;">
+              <button class="btn btn-outline edit-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block; margin-right: 4px;">✏️ Editar</button>
+              <button class="del-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;" title="Eliminar">🗑</button>
+            </td>
           </tr>`;
         }).join("")}
       </tbody>
       <tfoot><tr>
         <td colspan="6" class="right" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Total Gastos (Egresos)</td>
-        <td class="right total" style="color:var(--danger)">${fmtMXN(total)}</td><td></td>
+        <td class="right total" style="color:var(--danger)">${fmtMXN(total)}</td><td></td><td></td>
       </tr></tfoot>
     </table>
-  </div>
-  <p style="text-align: center; margin-top: 16px; color: var(--muted); font-size: 12px; font-style: italic;">
-    * Para corregir cualquier error en un registro, por favor comuníquese con el Departamento de Contabilidad.
-  </p>`;
+  </div>`;
 
   wrap.querySelectorAll(".view-receipt-btn").forEach(b => {
     b.addEventListener("click", () => {
@@ -251,6 +252,74 @@ function renderTable(list, total) {
         $("#fullReceiptImg").src = row.evidencia;
         $("#receiptModal").hidden = false;
       }
+    });
+  });
+
+  wrap.querySelectorAll(".edit-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const row = state.rows.find(r => r.id === id);
+      if (row) {
+        state.editingId = row.id;
+        $("#modalTag").textContent = "EDITAR REGISTRO";
+        $("#modalTitle").textContent = "Editar movimiento";
+        $("#saveBtn").textContent = "Guardar cambios";
+        
+        // Cargar datos
+        const f = $("#expenseForm");
+        f.querySelector("[name=fecha]").value = row.fecha;
+        $("#typeSelect").value = row.tipo || "Egreso";
+        $("#typeSelect").dispatchEvent(new Event("change"));
+        
+        f.querySelector("[name=monto]").value = row.monto;
+        f.querySelector("[name=descripcion]").value = row.descripcion;
+        f.querySelector("[name=notas]").value = row.notas || "";
+        
+        if ((row.tipo || "Egreso") === "Egreso") {
+          f.querySelector("[name=categoria]").value = row.categoria;
+          f.querySelector("[name=metodo_pago]").value = row.metodo_pago;
+          f.querySelector("[name=proveedor]").value = row.proveedor || "";
+        }
+        
+        // Evidencia / Recibo preview
+        if (row.evidencia) {
+          evidenceBase64 = row.evidencia;
+          evidenceEmpty.style.display = "none";
+          evidencePreview.style.display = "flex";
+          evidenceThumb.src = row.evidencia;
+          const sizeInKb = Math.round((row.evidencia.length * 3) / 4 / 1024);
+          evidenceSize.textContent = `${sizeInKb} KB (Comprimido)`;
+          evidenceArea.style.borderColor = "var(--gold)";
+        } else {
+          evidenceInput.value = "";
+          evidenceBase64 = null;
+          evidenceThumb.src = "";
+          evidenceEmpty.style.display = "block";
+          evidencePreview.style.display = "none";
+          evidenceArea.style.borderColor = "var(--rule)";
+        }
+        
+        $("#modal").hidden = false;
+      }
+    });
+  });
+
+  wrap.querySelectorAll(".del-btn").forEach(b => {
+    b.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar este registro? Esta acción no se puede deshacer.")) return;
+      const id = b.dataset.id;
+      if (supabaseClient && id.includes("-")) {
+        try {
+          const { error } = await supabaseClient.from('control_gastos').delete().eq('id', id);
+          if (error) throw error;
+        } catch (err) {
+          alert("Error al eliminar en la base de datos: " + err.message);
+          return;
+        }
+      }
+      state.rows = state.rows.filter(r => r.id !== id);
+      save();
+      render();
     });
   });
 }
@@ -271,7 +340,7 @@ async function fetchExpenses() {
       state.rows = data || [];
       save();
     } catch (err) {
-      console.warn("Fallo al conectar con Supabase. Usando caché local.", err);
+      console.warn("No se pudo sincronizar con base de datos, usando copia local.", err);
       state.rows = load();
     }
   } else {
@@ -283,9 +352,8 @@ async function fetchExpenses() {
 function startDashboard() {
   initSelects();
   fetchExpenses();
-
+  
   if (supabaseClient) {
-    // Escucha en tiempo real de cambios
     supabaseClient
       .channel('control_gastos_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'control_gastos' }, () => {
@@ -300,7 +368,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const encodedPass = 'aXZhZEFkbWluMjAyNg=='; // Base64 de 'ivadAdmin2026'
 
   // Acciones del modal
-  $("#openModal").addEventListener("click", () => $("#modal").hidden = false);
   $("#closeModal").addEventListener("click", () => $("#modal").hidden = true);
   $("#cancelBtn").addEventListener("click", () => $("#modal").hidden = true);
   $("#modal").addEventListener("click", e => { if (e.target.id === "modal") $("#modal").hidden = true; });
@@ -333,6 +400,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const resetFormLayout = () => {
+    state.editingId = null;
+    $("#modalTag").textContent = "NUEVO REGISTRO";
+    $("#modalTitle").textContent = "Registrar movimiento";
+    $("#saveBtn").textContent = "Guardar registro";
+    
     typeSelect.value = "Egreso";
     fldMetodo.style.display = "";
     fldCategoria.style.display = "";
@@ -468,41 +540,63 @@ document.addEventListener("DOMContentLoaded", () => {
       evidencia: tipoMov === "Egreso" ? (evidenceBase64 || null) : null
     };
 
-    if (supabaseClient) {
-      try {
-        const { data, error } = await supabaseClient
-          .from('control_gastos')
-          .insert([row])
-          .select();
-        if (error) throw error;
-        if (data && data.length) {
-          state.rows.unshift(data[0]);
-          // Enviar correo de notificación de forma asíncrona a través del servidor de RRHH
-          fetch('https://recursohumanos.ivadsrl.com/api/notify-expense', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data[0])
-          }).catch(err => console.error("Fallo al enviar notificación:", err));
-        } else {
+    if (state.editingId) {
+      if (supabaseClient && state.editingId.includes("-")) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('control_gastos')
+            .update(row)
+            .eq('id', state.editingId)
+            .select();
+          if (error) throw error;
+          if (data && data.length) {
+            const idx = state.rows.findIndex(r => r.id === state.editingId);
+            if (idx !== -1) state.rows[idx] = data[0];
+          }
+        } catch (err) {
+          alert("Error al actualizar en la base de datos: " + err.message);
+          return;
+        }
+      } else {
+        const idx = state.rows.findIndex(r => r.id === state.editingId);
+        if (idx !== -1) {
+          row.id = state.editingId;
+          row.created_at = state.rows[idx].created_at;
+          state.rows[idx] = row;
+        }
+      }
+    } else {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('control_gastos')
+            .insert([row])
+            .select();
+          if (error) throw error;
+          if (data && data.length) {
+            state.rows.unshift(data[0]);
+            // Enviar correo de notificación
+            fetch('https://recursohumanos.ivadsrl.com/api/notify-expense', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data[0])
+            }).catch(err => console.error("Fallo al enviar notificación:", err));
+          } else {
+            row.id = String(Date.now());
+            row.created_at = new Date().toISOString();
+            state.rows.unshift(row);
+          }
+        } catch (err) {
+          alert("Error al registrar en base de datos. Se registrará localmente. " + err.message);
           row.id = String(Date.now());
           row.created_at = new Date().toISOString();
           state.rows.unshift(row);
-          fetch('https://recursohumanos.ivadsrl.com/api/notify-expense', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(row)
-          }).catch(err => console.error("Fallo al enviar notificación:", err));
         }
-      } catch (err) {
-        alert("Error al registrar en base de datos. Se registrará localmente de forma temporal. " + err.message);
+      } else {
         row.id = String(Date.now());
         row.created_at = new Date().toISOString();
         state.rows.unshift(row);
       }
-    } else {
-      row.id = String(Date.now());
-      row.created_at = new Date().toISOString();
-      state.rows.unshift(row);
     }
 
     state.rows.sort((a, b) => b.fecha.localeCompare(a.fecha) || b.created_at.localeCompare(a.created_at));
