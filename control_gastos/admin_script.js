@@ -208,7 +208,7 @@ function renderTable(list, total) {
   <div style="overflow-x:auto">
     <table>
       <thead><tr>
-        <th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th style="text-align:center">Acciones</th>
+        <th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Descripción</th><th>Proveedor</th><th>Método</th><th class="right">Monto</th><th style="text-align:center">Evidencia</th><th style="text-align:center">Comprobante</th><th style="text-align:center">Acciones</th>
       </tr></thead>
       <tbody>
         ${list.map(r => {
@@ -230,6 +230,9 @@ function renderTable(list, total) {
             <td style="text-align:center">
               ${r.evidencia ? `<button class="btn btn-outline view-receipt-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🔍 Ver recibo</button>` : `<span style="color:var(--muted);font-style:italic">—</span>`}
             </td>
+            <td style="text-align:center">
+              <button class="btn btn-outline print-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;">🖨 Imprimir</button>
+            </td>
             <td style="text-align:center; white-space:nowrap;">
               <button class="btn btn-outline edit-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block; margin-right: 4px;">✏️ Editar</button>
               <button class="del-btn" data-id="${r.id}" style="padding: 4px 8px; font-size: 11px; display: inline-block;" title="Eliminar">🗑</button>
@@ -239,7 +242,7 @@ function renderTable(list, total) {
       </tbody>
       <tfoot><tr>
         <td colspan="6" class="right" style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Total Gastos (Egresos)</td>
-        <td class="right total" style="color:var(--danger)">${fmtMXN(total)}</td><td></td><td></td>
+        <td class="right total" style="color:var(--danger)">${fmtMXN(total)}</td><td></td><td></td><td></td>
       </tr></tfoot>
     </table>
   </div>`;
@@ -254,6 +257,157 @@ function renderTable(list, total) {
       }
     });
   });
+
+  wrap.querySelectorAll(".print-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const id = b.dataset.id;
+      const row = state.rows.find(r => r.id === id);
+      if (row) {
+        imprimirComprobante(row);
+      }
+    });
+  });
+}
+
+function imprimirComprobante(row) {
+  const seqId = (row.id || "TEMP").slice(0, 8).toUpperCase();
+  const fechaRegistro = row.created_at ? new Date(row.created_at).toLocaleString("es-DO", { dateStyle: "short", timeStyle: "short" }) : "—";
+  const fechaMovimiento = new Date(row.fecha + "T00:00:00").toLocaleDateString("es-DO", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const tipo = (row.tipo || "Egreso") === "Ingreso" ? "Reposición (Ingreso)" : "Gasto (Egreso)";
+  const metodo = (row.tipo || "Egreso") === "Ingreso" ? "Efectivo" : row.metodo_pago;
+  const categoria = (row.tipo || "Egreso") === "Ingreso" ? "Reposición" : row.categoria;
+  const monto = fmtMXN(Number(row.monto));
+  const proveedor = row.proveedor ? escapeHtml(row.proveedor) : "—";
+  const descripcion = escapeHtml(row.descripcion);
+  const notas = row.notas ? escapeHtml(row.notas) : "—";
+  
+  let evidenciaHtml = "";
+  if (row.evidencia) {
+    evidenciaHtml = `
+      <div class="section-title">Evidencia / Recibo</div>
+      <div class="evidence-area">
+        <img src="${row.evidencia}" alt="Recibo" />
+      </div>
+    `;
+  }
+  
+  const w = window.open("", "_blank");
+  w.document.write(`
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprobante CC-${seqId}</title>
+  <style>
+    body { font-family: 'Inter', sans-serif; color: #1a2a5e; margin: 0; padding: 40px; background: #fff; }
+    .ticket { border: 1px solid #e6e1d6; border-radius: 8px; padding: 30px; max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e6e1d6; padding-bottom: 20px; margin-bottom: 20px; }
+    .header img { height: 60px; width: auto; }
+    .header-title { text-align: right; }
+    .header-title h1 { font-size: 20px; margin: 0 0 5px 0; color: #1a2a5e; font-family: 'Playfair Display', serif; }
+    .header-title p { font-size: 11px; color: #6b6a63; margin: 0; }
+    .voucher-num { border: 1px solid #1a2a5e; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 5px; font-size: 12px; }
+    .meta-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #e6e1d6; padding-bottom: 15px; }
+    .meta-item { text-align: center; }
+    .meta-item .label { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6b6a63; margin-bottom: 4px; }
+    .meta-item .val { font-size: 12px; font-weight: 600; }
+    .section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #6b6a63; border-bottom: 1px solid #e6e1d6; padding-bottom: 6px; margin-bottom: 15px; }
+    .details-box { border: 1px solid #e6e1d6; border-radius: 6px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1fr; }
+    .detail-cell { padding: 12px 15px; border-bottom: 1px solid #e6e1d6; }
+    .detail-cell.full { grid-column: span 2; }
+    .detail-cell.no-border { border-bottom: none; }
+    .detail-cell .label { font-size: 9px; font-weight: 700; color: #6b6a63; text-transform: uppercase; margin-bottom: 4px; }
+    .detail-cell .val { font-size: 13px; font-weight: 500; }
+    .evidence-area { border: 1px solid #e6e1d6; border-radius: 6px; padding: 20px; text-align: center; margin-bottom: 25px; }
+    .evidence-area img { max-height: 350px; max-width: 100%; object-fit: contain; border-radius: 4px; }
+    .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 40px; margin-bottom: 30px; }
+    .signature-line { border-top: 1px solid #e6e1d6; text-align: center; padding-top: 8px; font-size: 11px; color: #6b6a63; }
+    .footer { text-align: center; font-size: 9px; color: #6b6a63; border-top: 1px solid #e6e1d6; padding-top: 15px; margin-top: 20px; }
+    @media print {
+      body { padding: 0; }
+      .ticket { border: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ticket">
+    <div class="header">
+      <img src="https://gestion.ivadsrl.com/ivad-logo.png" alt="IVAD">
+      <div class="header-title">
+        <h1>REPORTE DE CAJA CHICA</h1>
+        <p>Fecha de registro: ${fechaRegistro}</p>
+        <div class="voucher-num">N° COMPROBANTE: CC-${seqId}</div>
+      </div>
+    </div>
+    
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="label">Fecha Movimiento</div>
+        <div class="val">${fechaMovimiento}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Tipo Movimiento</div>
+        <div class="val">${tipo}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Método Pago</div>
+        <div class="val">${metodo}</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Categoría</div>
+        <div class="val">${categoria}</div>
+      </div>
+    </div>
+
+    <div class="section-title">Detalle del Movimiento</div>
+    <div class="details-box">
+      <div class="detail-cell">
+        <div class="label">Monto (RD$)</div>
+        <div class="val" style="font-size: 16px; font-weight: 700; color: #1a2a5e;">${monto}</div>
+      </div>
+      <div class="detail-cell">
+        <div class="label">Proveedor</div>
+        <div class="val">${proveedor}</div>
+      </div>
+      <div class="detail-cell full">
+        <div class="label">Descripción</div>
+        <div class="val">${descripcion}</div>
+      </div>
+      <div class="detail-cell full no-border">
+        <div class="label">Notas / Observaciones</div>
+        <div class="val">${notas}</div>
+      </div>
+    </div>
+
+    ${evidenciaHtml}
+
+    <div class="signatures">
+      <div>
+        <div style="height: 50px;"></div>
+        <div class="signature-line">Registrado por: Nombre y firma</div>
+      </div>
+      <div>
+        <div style="height: 50px;"></div>
+        <div class="signature-line">Aprobado por: Nombre y firma</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      IVAD Home & Goods | Est. 1996<br>
+      Todos los derechos reservados.
+    </div>
+  </div>
+  <script>
+    window.onload = function() {
+      window.print();
+      setTimeout(function() { window.close(); }, 500);
+    };
+  </script>
+</body>
+</html>
+  `);
+  w.document.close();
+}
 
   wrap.querySelectorAll(".edit-btn").forEach(b => {
     b.addEventListener("click", () => {
