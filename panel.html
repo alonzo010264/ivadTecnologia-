@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Panel de Tecnología</title>
+  <meta name="description" content="Panel Administrativo de TI" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <img src="ivad-logo.png" alt="IVAD Home & Goods" />
+    <div style="text-align: right;">
+      <div class="dept-tag" style="background:var(--primary); color:white;">Panel de Administración</div>
+      <div style="font-size:12px; font-weight:600; margin-top:4px;">Tecnología e Informática</div>
+    </div>
+  </header>
+
+  <main class="panel-container">
+    
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="label">Correos por Crear (Altas)</div>
+        <div class="val" id="statAltas">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Correos por Eliminar (Bajas)</div>
+        <div class="val" id="statBajas">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Sugerencias Nuevas</div>
+        <div class="val" id="statSugerencias">0</div>
+      </div>
+    </div>
+
+    <!-- Gestión de Correos -->
+    <div class="data-card">
+      <div class="data-header">
+        <h3>Gestión de Correos Empresariales</h3>
+        <span style="font-size:12px; color:var(--ink-soft);">Solicitudes de Alta y Baja</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Folio / Fecha</th>
+              <th>Tipo</th>
+              <th>Colaborador</th>
+              <th>Depto.</th>
+              <th>Correo / Clave</th>
+              <th>Justificación</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="correosBody">
+            <tr><td colspan="8" style="text-align:center; padding: 30px;">Cargando solicitudes...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Buzón de Sugerencias -->
+    <div class="data-card">
+      <div class="data-header">
+        <h3>Buzón de Sugerencias</h3>
+        <span style="font-size:12px; color:var(--ink-soft);">Opiniones de los Colaboradores</span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Folio / Fecha</th>
+              <th>Nombre</th>
+              <th>Depto.</th>
+              <th style="width: 40%;">Mensaje</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="buzonBody">
+            <tr><td colspan="6" style="text-align:center; padding: 30px;">Cargando sugerencias...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    
+    function fmt(d) {
+      try { return new Date(d).toLocaleDateString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); } catch(_) { return d; }
+    }
+
+    const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
+    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    let correos = [];
+    let sugerencias = [];
+
+    async function loadData() {
+      try {
+        const [resCorreos, resSug] = await Promise.all([
+          supabase.from('gestion_correos').select('*').order('created_at', { ascending: false }),
+          supabase.from('sugerencias_empleados').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (resCorreos.error) {
+          console.error("Error correos:", resCorreos.error);
+          $('correosBody').innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--danger);">Error de base de datos: ${resCorreos.error.message}. Asegúrate de haber creado la tabla en Supabase.</td></tr>`;
+        } else {
+          correos = resCorreos.data || [];
+        }
+
+        if (resSug.error) {
+          console.error("Error sugerencias:", resSug.error);
+          $('buzonBody').innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color:var(--danger);">Error de base de datos: ${resSug.error.message}. Asegúrate de haber creado la tabla en Supabase.</td></tr>`;
+        } else {
+          sugerencias = resSug.data || [];
+        }
+
+        // Si al menos una consulta fue exitosa, renderizamos
+        if (!resCorreos.error || !resSug.error) {
+          render();
+        }
+      } catch (err) {
+        console.error("Error de conexión:", err);
+        const errorHtml = `
+          <tr>
+            <td colspan="8" style="text-align:center; padding: 30px; color:var(--danger);">
+              <strong>Error de conexión o bloqueo de seguridad (CORS).</strong><br/>
+              <span style="font-size:12px; color:var(--ink-soft);">
+                Si abriste este archivo con doble clic directo desde tu PC, el navegador bloquea la conexión por seguridad.<br/>
+                Para verlo funcionar: <strong>súbelo a GitHub y pruébalo desde el enlace de internet</strong> o usa un servidor local.
+              </span>
+            </td>
+          </tr>
+        `;
+        $('correosBody').innerHTML = errorHtml;
+        $('buzonBody').innerHTML = errorHtml.replace('colspan="8"', 'colspan="6"');
+      }
+    }
+
+    function render() {
+      // STATS
+      const pAltas = correos.filter(c => c.tipo === 'ALTA' && c.estado === 'PENDIENTE').length;
+      const pBajas = correos.filter(c => c.tipo === 'BAJA' && c.estado === 'PENDIENTE').length;
+      const pSug = sugerencias.filter(s => s.estado === 'NUEVA').length;
+
+      $('statAltas').textContent = pAltas;
+      $('statBajas').textContent = pBajas;
+      $('statSugerencias').textContent = pSug;
+
+      // CORREOS
+      const cBody = $('correosBody');
+      if (correos.length === 0) {
+        cBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px; color:var(--ink-soft);">No hay solicitudes de correos registradas.</td></tr>';
+      } else {
+        cBody.innerHTML = '';
+        correos.forEach(c => {
+          const badgeType = c.tipo === 'ALTA' ? 'alta' : 'baja';
+          const badgeText = c.tipo === 'ALTA' ? 'Alta' : 'Baja';
+          
+          let estadoBadge = '';
+          if (c.estado === 'PENDIENTE') estadoBadge = '<span class="badge pendiente">Pendiente</span>';
+          else if (c.estado === 'COMPLETADO') estadoBadge = '<span class="badge completado">Completado</span>';
+          else estadoBadge = `<span class="badge">${c.estado}</span>`;
+
+          cBody.innerHTML += `
+            <tr>
+              <td>
+                <strong>${c.folio}</strong><br/>
+                <span class="hint">${fmt(c.created_at)}</span>
+              </td>
+              <td><span class="badge ${badgeType}">${badgeText}</span></td>
+              <td><strong>${escapeHtml(c.nombre)}</strong></td>
+              <td>${escapeHtml(c.departamento)}</td>
+              <td>
+                <span style="color:#0284c7;">${escapeHtml(c.correo_sugerido)}</span>
+                ${c.contrasena ? `<br/><span style="font-family:monospace; font-size:12px; color:var(--ink-soft); background:#f1f5f9; padding:2px 4px; border-radius:4px;">🔑 ${escapeHtml(c.contrasena)}</span>` : ''}
+              </td>
+              <td style="font-size:13px;">${escapeHtml(c.justificacion)}</td>
+              <td>${estadoBadge}</td>
+              <td>
+                ${c.estado === 'PENDIENTE' 
+                  ? `<button class="action-btn" onclick="updateEstado('gestion_correos', '${c.id}', 'COMPLETADO')">Marcar Listo</button>`
+                  : `<button class="action-btn danger" onclick="deleteRow('gestion_correos', '${c.id}')">Eliminar</button>`
+                }
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // SUGERENCIAS
+      const sBody = $('buzonBody');
+      if (sugerencias.length === 0) {
+        sBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color:var(--ink-soft);">No hay sugerencias en el buzón.</td></tr>';
+      } else {
+        sBody.innerHTML = '';
+        sugerencias.forEach(s => {
+          let estadoBadge = '';
+          if (s.estado === 'NUEVA') estadoBadge = '<span class="badge alta">Nueva</span>';
+          else if (s.estado === 'LEIDA') estadoBadge = '<span class="badge">Leída</span>';
+          
+          sBody.innerHTML += `
+            <tr>
+              <td>
+                <strong>${s.folio}</strong><br/>
+                <span class="hint">${fmt(s.created_at)}</span>
+              </td>
+              <td><strong>${escapeHtml(s.nombre)}</strong></td>
+              <td>${escapeHtml(s.departamento)}</td>
+              <td style="font-size:13px; line-height: 1.5;">${escapeHtml(s.sugerencia)}</td>
+              <td>${estadoBadge}</td>
+              <td>
+                ${s.estado === 'NUEVA' 
+                  ? `<button class="action-btn" onclick="updateEstado('sugerencias_empleados', '${s.id}', 'LEIDA')">Marcar Leída</button>`
+                  : ''
+                }
+                <button class="action-btn danger" style="margin-top:4px;" onclick="deleteRow('sugerencias_empleados', '${s.id}')">Borrar</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+    }
+
+    window.updateEstado = async function(table, id, newState) {
+      const { error } = await supabase.from(table).update({ estado: newState }).eq('id', id);
+      if (error) {
+        alert("Error al actualizar: " + error.message);
+      } else {
+        if (table === 'gestion_correos') {
+          const item = correos.find(x => x.id === id);
+          if (item) item.estado = newState;
+        } else {
+          const item = sugerencias.find(x => x.id === id);
+          if (item) item.estado = newState;
+        }
+        render();
+      }
+    };
+
+    window.deleteRow = async function(table, id) {
+      if (!confirm("¿Seguro que deseas eliminar este registro por completo?")) return;
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) {
+        alert("Error al eliminar: " + error.message);
+      } else {
+        if (table === 'gestion_correos') {
+          correos = correos.filter(x => x.id !== id);
+        } else {
+          sugerencias = sugerencias.filter(x => x.id !== id);
+        }
+        render();
+      }
+    };
+
+    // Listeners Realtime
+    supabase.channel('tec_correos').on('postgres_changes', { event: '*', schema: 'public', table: 'gestion_correos' }, () => { loadData(); }).subscribe();
+    supabase.channel('tec_sug').on('postgres_changes', { event: '*', schema: 'public', table: 'sugerencias_empleados' }, () => { loadData(); }).subscribe();
+
+    loadData();
+  </script>
+</body>
+</html>

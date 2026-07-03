@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Buzón de Sugerencias</title>
+  <meta name="description" content="Buzón de Sugerencias de los Empleados - IVAD" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <img src="ivad-logo.png" alt="IVAD Home & Goods" />
+    <div class="dept-tag">Buzón de Empleados</div>
+  </header>
+
+  <main class="container">
+    <div class="form-card" id="formContainer">
+      <h1>Buzón de Sugerencias</h1>
+      <p class="desc">Tu opinión nos ayuda a mejorar. Envía tus sugerencias, quejas o ideas para IVAD. Puedes hacerlo de forma anónima si lo prefieres.</p>
+      
+      <div id="errorMsg" style="display:none; background:var(--danger); color:white; padding:12px; border-radius:6px; margin-bottom:20px; font-size:14px;"></div>
+
+      <form id="buzonForm">
+        
+        <div class="form-group">
+          <label for="nombre">1. Tu Nombre (Opcional)</label>
+          <input type="text" id="nombre" class="form-control" placeholder="Déjalo en blanco si prefieres ser anónimo" />
+        </div>
+
+        <div class="form-group">
+          <label for="departamento">2. Tu Departamento</label>
+          <select id="departamento" class="form-control" required>
+            <option value="" disabled selected>Seleccione su departamento...</option>
+            <option value="Ventas">Ventas</option>
+            <option value="Logística">Logística / Almacén</option>
+            <option value="Administración">Administración / Contabilidad</option>
+            <option value="Recursos Humanos">Recursos Humanos</option>
+            <option value="Atención al Cliente">Atención al Cliente</option>
+            <option value="Gerencia">Gerencia</option>
+            <option value="Tecnología">Tecnología e Informática</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sugerencia">3. Sugerencia, Idea o Queja</label>
+          <textarea id="sugerencia" class="form-control" placeholder="Escribe aquí tus comentarios detallados..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">Enviar al Buzón de IVAD</button>
+      </form>
+    </div>
+
+    <!-- Pantalla de Éxito -->
+    <div class="form-card success-state" id="successContainer" hidden>
+      <h2>¡Mensaje Enviado!</h2>
+      <p>Gracias por ayudarnos a mejorar IVAD. Tu sugerencia ha sido recibida y será revisada por la gerencia.</p>
+      
+      <p style="margin-bottom: 10px; font-size: 13px; font-weight: bold;">Folio de Recepción:</p>
+      <div class="folio-box" id="folioNum"></div>
+      
+      <div>
+        <button class="btn" id="againBtn" style="width: auto;">Enviar otro mensaje</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+
+    // Supabase
+    const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
+    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    $('buzonForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = $('submitBtn');
+      const err = $('errorMsg');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      err.style.display = 'none';
+
+      const folio = "IVAD-BZ-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+      let nombreVal = $('nombre').value.trim();
+      if (!nombreVal) nombreVal = 'Anónimo';
+
+      const payload = {
+        folio: folio,
+        nombre: nombreVal,
+        departamento: $('departamento').value,
+        sugerencia: $('sugerencia').value.trim(),
+        estado: 'NUEVA'
+      };
+
+      try {
+        const { error } = await supabase.from('sugerencias_empleados').insert([payload]);
+        if (error) throw error;
+
+        // Success
+        $('formContainer').hidden = true;
+        $('folioNum').textContent = folio;
+        $('successContainer').hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        console.error(error);
+        err.textContent = 'Ocurrió un error al enviar la sugerencia. Verifica tu conexión o intenta más tarde.';
+        err.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar al Buzón de IVAD';
+      }
+    });
+
+    $('againBtn').addEventListener('click', () => {
+      $('buzonForm').reset();
+      $('successContainer').hidden = true;
+      $('formContainer').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>

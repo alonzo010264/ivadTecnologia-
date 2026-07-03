@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Solicitud de Correos</title>
+  <meta name="description" content="Gestión de Correos Empresariales - Departamento de Tecnología IVAD" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <img src="ivad-logo.png" alt="IVAD Home & Goods" />
+    <div class="dept-tag">Tecnología e Informática</div>
+  </header>
+
+  <main class="container">
+    <div class="form-card" id="formContainer">
+      <h1>Gestión de Correos Empresariales</h1>
+      <p class="desc">Formulario oficial para solicitar la creación o eliminación de cuentas de correo de la empresa. Las solicitudes serán gestionadas por Tecnología en coordinación con Gerencia.</p>
+      
+      <div id="errorMsg" style="display:none; background:var(--danger); color:white; padding:12px; border-radius:6px; margin-bottom:20px; font-size:14px;"></div>
+
+      <form id="correoForm">
+        
+        <!-- Hidden inputs for pure CSS state management -->
+        <input type="radio" name="tipo" value="ALTA" id="opt-alta" checked style="display:none;">
+        <input type="radio" name="tipo" value="BAJA" id="opt-baja" style="display:none;">
+        
+        <div class="form-group">
+          <label>1. ¿Qué acción deseas realizar?</label>
+          <div class="radio-group" id="tipoWrap">
+            
+            <label for="opt-alta" class="radio-card select-alta" style="align-items: center; cursor: pointer;">
+              <span class="custom-radio-indicator"></span>
+              <div>
+                <span class="rc-title">Nuevo Correo (Alta)</span>
+                <span class="rc-desc">Crear un correo para un empleado o departamento.</span>
+              </div>
+            </label>
+            
+            <label for="opt-baja" class="radio-card select-baja" style="align-items: center; cursor: pointer;">
+              <span class="custom-radio-indicator"></span>
+              <div>
+                <span class="rc-title">Eliminar Correo (Baja)</span>
+                <span class="rc-desc">Dar de baja un correo sin uso para evitar cobros.</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- PREGUNTAS PARA NUEVO CORREO (ALTA) -->
+        <div id="seccionAlta">
+          <div class="form-group">
+            <label for="alta_nombre">2. Nombre del Colaborador o Área</label>
+            <input type="text" id="alta_nombre" class="form-control" placeholder="Ej. Juan Pérez / Contabilidad" />
+          </div>
+
+          <div class="form-group">
+            <label for="alta_departamento">3. Departamento</label>
+            <select id="alta_departamento" class="form-control">
+              <option value="" disabled selected>Seleccione un departamento...</option>
+              <option value="Ventas">Ventas</option>
+              <option value="Logística">Logística / Almacén</option>
+              <option value="Administración">Administración / Contabilidad</option>
+              <option value="Recursos Humanos">Recursos Humanos</option>
+              <option value="Atención al Cliente">Atención al Cliente</option>
+              <option value="Gerencia">Gerencia</option>
+              <option value="Tecnología">Tecnología e Informática</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="alta_correo">4. Correo Sugerido</label>
+            <input type="email" id="alta_correo" class="form-control" placeholder="Ej. jperez@ivad.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="alta_contrasena">5. Contraseña Sugerida (Para configuración por TI)</label>
+            <input type="text" id="alta_contrasena" class="form-control" placeholder="Recomendamos dejar la clave genérica para configurar firmas" />
+            <span class="hint">Al proporcionarla, TI podrá configurar automáticamente las firmas empresariales sin intervenir físicamente la PC del usuario. El usuario podrá cambiarla después.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="alta_justificacion">6. Justificación de la Solicitud</label>
+            <textarea id="alta_justificacion" class="form-control" placeholder="Explique por qué se necesita crear este correo..."></textarea>
+          </div>
+        </div>
+
+        <!-- PREGUNTAS PARA ELIMINAR CORREO (BAJA) -->
+        <div id="seccionBaja">
+          <div class="form-group">
+            <label for="baja_correo">2. Correo Empresarial a Eliminar</label>
+            <input type="email" id="baja_correo" class="form-control" placeholder="Ej. ex-empleado@ivad.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="baja_departamento">3. Departamento al que pertenecía</label>
+            <select id="baja_departamento" class="form-control">
+              <option value="" disabled selected>Seleccione un departamento...</option>
+              <option value="Ventas">Ventas</option>
+              <option value="Logística">Logística / Almacén</option>
+              <option value="Administración">Administración / Contabilidad</option>
+              <option value="Recursos Humanos">Recursos Humanos</option>
+              <option value="Atención al Cliente">Atención al Cliente</option>
+              <option value="Gerencia">Gerencia</option>
+              <option value="Tecnología">Tecnología e Informática</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="baja_motivo">4. Motivo de la Eliminación (Baja)</label>
+            <textarea id="baja_motivo" class="form-control" placeholder="Ej. El empleado renunció, el correo ya no se usa y genera gastos, etc."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">Enviar Solicitud a Tecnología</button>
+      </form>
+    </div>
+
+    <!-- Pantalla de Éxito -->
+    <div class="form-card success-state" id="successContainer" hidden>
+      <h2>¡Solicitud Recibida!</h2>
+      <p>El departamento de Tecnología e Informática ha recibido su solicitud. Se coordinará con gerencia para su aprobación y ejecución.</p>
+      
+      <p style="margin-bottom: 10px; font-size: 13px; font-weight: bold;">Folio de Seguimiento:</p>
+      <div class="folio-box" id="folioNum"></div>
+      
+      <div>
+        <button class="btn" id="againBtn" style="width: auto;">Hacer otra solicitud</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    
+    // Supabase
+    const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
+    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+    $('correoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // Obtener el tipo seleccionado actualmente de manera directa del DOM
+      const tipoActual = document.querySelector('input[name="tipo"]:checked').value;
+      
+      // Validar campos según el tipo
+      if (tipoActual === 'ALTA') {
+        if (!$('alta_nombre').value || !$('alta_departamento').value || !$('alta_correo').value || !$('alta_justificacion').value) {
+          alert("Por favor complete todos los campos obligatorios para Nuevo Correo.");
+          return;
+        }
+      } else {
+        if (!$('baja_correo').value || !$('baja_departamento').value || !$('baja_motivo').value) {
+          alert("Por favor complete todos los campos obligatorios para Eliminar Correo.");
+          return;
+        }
+      }
+      
+      const btn = $('submitBtn');
+      const err = $('errorMsg');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      err.style.display = 'none';
+
+      const folio = "TI-EM-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+      let payload = {};
+      if (tipoActual === 'ALTA') {
+        payload = {
+          folio: folio,
+          tipo: tipoActual,
+          nombre: $('alta_nombre').value.trim(),
+          departamento: $('alta_departamento').value,
+          correo_sugerido: $('alta_correo').value.trim(),
+          contrasena: $('alta_contrasena').value.trim(),
+          justificacion: $('alta_justificacion').value.trim(),
+          estado: 'PENDIENTE'
+        };
+      } else {
+        payload = {
+          folio: folio,
+          tipo: tipoActual,
+          nombre: 'BAJA DE CORREO',
+          departamento: $('baja_departamento').value,
+          correo_sugerido: $('baja_correo').value.trim(),
+          contrasena: '',
+          justificacion: $('baja_motivo').value.trim(),
+          estado: 'PENDIENTE'
+        };
+      }
+
+      try {
+        const { error } = await supabase.from('gestion_correos').insert([payload]);
+        if (error) throw error;
+
+        // Success
+        $('formContainer').hidden = true;
+        $('folioNum').textContent = folio;
+        $('successContainer').hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        console.error(error);
+        err.textContent = 'Ocurrió un error al enviar la solicitud. Verifica tu conexión o intenta más tarde.';
+        err.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar Solicitud a Tecnología';
+      }
+    });
+
+    $('againBtn').addEventListener('click', () => {
+      $('correoForm').reset();
+      // Volver a seleccionar Alta por defecto
+      $('opt-alta').checked = true;
+      $('successContainer').hidden = true;
+      $('formContainer').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
