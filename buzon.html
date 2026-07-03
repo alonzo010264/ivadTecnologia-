@@ -68,14 +68,22 @@
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase.js"></script>
   <script>
     const $ = id => document.getElementById(id);
 
     // Supabase
     const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
     const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    
+    let supabaseClient = null;
+    try {
+      if (typeof window.supabase !== 'undefined') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase:", e);
+    }
 
     $('buzonForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -98,8 +106,16 @@
         estado: 'NUEVA'
       };
 
+      if (!supabaseClient) {
+        err.textContent = 'Librería de base de datos no cargada. Revisa tu conexión.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Enviar al Buzón de IVAD';
+        return;
+      }
+
       try {
-        const { error } = await supabase.from('sugerencias_empleados').insert([payload]);
+        const { error } = await supabaseClient.from('sugerencias_empleados').insert([payload]);
         if (error) throw error;
 
         // Success

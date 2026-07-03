@@ -111,7 +111,7 @@
 
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase.js"></script>
   <script>
     const $ = id => document.getElementById(id);
     const escapeHtml = (s) => String(s||"").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -122,16 +122,28 @@
 
     const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
     const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    
+    let supabaseClient = null;
+    try {
+      if (typeof window.supabase !== 'undefined') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase:", e);
+    }
 
     let correos = [];
     let sugerencias = [];
 
     async function loadData() {
+      if (!supabaseClient) {
+        console.error("Supabase no inicializado.");
+        return;
+      }
       try {
         const [resCorreos, resSug] = await Promise.all([
-          supabase.from('gestion_correos').select('*').order('created_at', { ascending: false }),
-          supabase.from('sugerencias_empleados').select('*').order('created_at', { ascending: false })
+          supabaseClient.from('gestion_correos').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('sugerencias_empleados').select('*').order('created_at', { ascending: false })
         ]);
 
         if (resCorreos.error) {
@@ -256,7 +268,8 @@
     }
 
     window.updateEstado = async function(table, id, newState) {
-      const { error } = await supabase.from(table).update({ estado: newState }).eq('id', id);
+      if (!supabaseClient) return;
+      const { error } = await supabaseClient.from(table).update({ estado: newState }).eq('id', id);
       if (error) {
         alert("Error al actualizar: " + error.message);
       } else {
@@ -273,7 +286,8 @@
 
     window.deleteRow = async function(table, id) {
       if (!confirm("¿Seguro que deseas eliminar este registro por completo?")) return;
-      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (!supabaseClient) return;
+      const { error } = await supabaseClient.from(table).delete().eq('id', id);
       if (error) {
         alert("Error al eliminar: " + error.message);
       } else {
@@ -297,9 +311,11 @@
     const correctHash = '6276637acb97c8618ebee4001af222c29bf2771c6ef36d7b6ccabec9c7f096f0'; // SHA-256 of ivadAdmin2026
 
     function startDashboard() {
-      // Listeners Realtime
-      supabase.channel('tec_correos').on('postgres_changes', { event: '*', schema: 'public', table: 'gestion_correos' }, () => { loadData(); }).subscribe();
-      supabase.channel('tec_sug').on('postgres_changes', { event: '*', schema: 'public', table: 'sugerencias_empleados' }, () => { loadData(); }).subscribe();
+      if (supabaseClient) {
+        // Listeners Realtime
+        supabaseClient.channel('tec_correos').on('postgres_changes', { event: '*', schema: 'public', table: 'gestion_correos' }, () => { loadData(); }).subscribe();
+        supabaseClient.channel('tec_sug').on('postgres_changes', { event: '*', schema: 'public', table: 'sugerencias_empleados' }, () => { loadData(); }).subscribe();
+      }
       loadData();
     }
 
