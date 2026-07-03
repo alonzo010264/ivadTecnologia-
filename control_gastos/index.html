@@ -8,14 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="styles.css" />
-<script src="chart.js"></script>
+<link rel="stylesheet" href="/control_gastos/styles.css" />
+<script src="/control_gastos/chart.js"></script>
 </head>
 <body>
   <!-- Login Overlay for Restricted Access -->
   <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--paper); display: flex; align-items: center; justify-content: center; z-index: 9999;">
     <div class="card" style="width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--rule); padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-      <img src="Logo.png" alt="IVAD" style="height: 64px; width: auto; margin-bottom: 20px;" />
+      <img src="/ivad-logo.png" alt="IVAD" style="height: 64px; width: auto; margin-bottom: 20px;" />
       <h2 class="display sm" style="margin-bottom: 10px; color: var(--ink);">Control de Gastos</h2>
       <p style="color: var(--muted); font-size: 14px; margin-bottom: 24px;">Acceso restringido para personal autorizado.</p>
       
@@ -38,7 +38,7 @@
     <!-- Header -->
     <header class="card header">
       <div class="header-left">
-        <img src="Logo.png" alt="IVAD" style="height: 64px; width: auto;" />
+        <img src="/ivad-logo.png" alt="IVAD" style="height: 64px; width: auto;" />
         <div>
           <div class="tag">CONTROL INTERNO</div>
           <h1 class="display">Gastos de la Empresa</h1>
@@ -144,7 +144,7 @@
   </div>
 </div>
 
-<script src="supabase.js"></script>
-<script src="script.js"></script>
+<script src="/control_gastos/supabase.js"></script>
+<script src="/control_gastos/script.js"></script>
 </body>
 </html>
