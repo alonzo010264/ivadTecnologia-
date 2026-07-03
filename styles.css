@@ -17,7 +17,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--ink
 
 /* HEADER */
 .page-header { background: var(--card); border-bottom: 1px solid var(--rule); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-.page-header img { height: 80px; }
+.page-header img { height: 120px; }
 .page-header .dept-tag { font-size: 11px; font-weight: 700; background: var(--ink); color: #fff; padding: 4px 10px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
 
 /* LAYOUT */
