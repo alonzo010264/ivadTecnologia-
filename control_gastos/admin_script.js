@@ -692,18 +692,22 @@ document.addEventListener("DOMContentLoaded", () => {
       evidencia: tipoMov === "Egreso" ? (evidenceBase64 || null) : null
     };
 
+    const dbRow = { ...row };
+    delete dbRow.evidencia;
+
     if (state.editingId) {
       if (supabaseClient && state.editingId.includes("-")) {
         try {
           const { data, error } = await supabaseClient
             .from('control_gastos')
-            .update(row)
+            .update(dbRow)
             .eq('id', state.editingId)
             .select();
           if (error) throw error;
           if (data && data.length) {
             const idx = state.rows.findIndex(r => r.id === state.editingId);
-            if (idx !== -1) state.rows[idx] = data[0];
+            const newRow = { ...data[0], evidencia: row.evidencia };
+            if (idx !== -1) state.rows[idx] = newRow;
           }
         } catch (err) {
           alert("Error al actualizar en la base de datos: " + err.message);
@@ -722,11 +726,12 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           const { data, error } = await supabaseClient
             .from('control_gastos')
-            .insert([row])
+            .insert([dbRow])
             .select();
           if (error) throw error;
           if (data && data.length) {
-            state.rows.unshift(data[0]);
+            const newRow = { ...data[0], evidencia: row.evidencia };
+            state.rows.unshift(newRow);
             // Enviar correo de notificación
             fetch('https://recursohumanos.ivadsrl.com/api/notify-expense', {
               method: 'POST',

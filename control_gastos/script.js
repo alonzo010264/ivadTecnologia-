@@ -620,15 +620,19 @@ document.addEventListener("DOMContentLoaded", () => {
       evidencia: tipoMov === "Egreso" ? (evidenceBase64 || null) : null
     };
 
+    const dbRow = { ...row };
+    delete dbRow.evidencia;
+
     if (supabaseClient) {
       try {
         const { data, error } = await supabaseClient
           .from('control_gastos')
-          .insert([row])
+          .insert([dbRow])
           .select();
         if (error) throw error;
         if (data && data.length) {
-          state.rows.unshift(data[0]);
+          const newRow = { ...data[0], evidencia: row.evidencia };
+          state.rows.unshift(newRow);
           // Enviar correo de notificación de forma asíncrona a través del servidor de RRHH
           fetch('https://recursohumanos.ivadsrl.com/api/notify-expense', {
             method: 'POST',
