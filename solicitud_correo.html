@@ -12,7 +12,7 @@
 </head>
 <body>
   <header class="page-header">
-    <img src="ivad-logo.png" alt="IVAD Home & Goods" />
+    <img src="https://rbtdahmhaksdvupsmkma.supabase.co/storage/v1/object/public/product-images/logo_transparent.png" alt="IVAD Home & Goods" style="height:80px; width:auto;" />
     <div class="dept-tag">Tecnología e Informática</div>
   </header>
 
@@ -137,13 +137,13 @@
     </div>
   </main>
 
-  <script src="/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const $ = id => document.getElementById(id);
     
     // Supabase
     const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
-    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJidGRhaG1oYWtzZHZ1cHNta21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk1MDEwODQsImV4cCI6MjA2NTA3NzA4NH0.EAE-fVWCUjSqVOsVlVGAFH-JbQHvM2bSsxY6MWLiRq8';
     
     let supabaseClient = null;
     try {
