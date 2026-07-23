@@ -358,6 +358,7 @@
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <button class="action-btn" style="background:#0284c7; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'EN_REVISION')">Iniciar Revisión</button>
                 <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+                <button class="action-btn" style="background:#555; color:white; border:none; padding: 6px 10px; margin-top:4px;" onclick="imprimirSolicitud('${r.id}')">Imprimir</button>
               </div>
             `;
           } else if (r.estado === 'EN_REVISION') {
@@ -365,6 +366,7 @@
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <button class="action-btn" style="background:#1a237e; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'EN_CONTABILIDAD')">Enviar a Pago</button>
                 <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+                <button class="action-btn" style="background:#555; color:white; border:none; padding: 6px 10px; margin-top:4px;" onclick="imprimirSolicitud('${r.id}')">Imprimir</button>
               </div>
             `;
           } else if (r.estado === 'EN_CONTABILIDAD') {
@@ -372,6 +374,7 @@
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <button class="action-btn" style="background:#4a148c; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'VERIFICACION_DISPOSITIVO')">Aprobar Pago</button>
                 <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+                <button class="action-btn" style="background:#555; color:white; border:none; padding: 6px 10px; margin-top:4px;" onclick="imprimirSolicitud('${r.id}')">Imprimir</button>
               </div>
             `;
           } else if (r.estado === 'VERIFICACION_DISPOSITIVO') {
@@ -379,10 +382,16 @@
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <button class="action-btn" style="background:#1b5e20; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'COMPLETADO')">Activar y Cerrar</button>
                 <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+                <button class="action-btn" style="background:#555; color:white; border:none; padding: 6px 10px; margin-top:4px;" onclick="imprimirSolicitud('${r.id}')">Imprimir</button>
               </div>
             `;
           } else {
-            actionsHTML = `<button class="action-btn danger" onclick="deleteRow('solicitudes_recursos', '${r.id}')">Eliminar</button>`;
+            actionsHTML = `
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="action-btn danger" onclick="deleteRow('solicitudes_recursos', '${r.id}')">Eliminar</button>
+                <button class="action-btn" style="background:#555; color:white; border:none; padding: 6px 10px;" onclick="imprimirSolicitud('${r.id}')">Imprimir</button>
+              </div>
+            `;
           }
 
           rBody.innerHTML += `
@@ -405,9 +414,15 @@
               <td>
                 <span style="font-weight:600; color:#b04545;">$${parseFloat(r.costo_estimado || 0).toFixed(2)}</span>
               </td>
-              <td style="font-size:13px; line-height: 1.5;">
+              <td style="font-size:13px; line-height: 1.5; min-width: 250px;">
                 <strong>Justificación:</strong> ${escapeHtml(r.justificacion)}
                 <br/><strong style="display:inline-block; margin-top:4px;">Beneficio:</strong> ${escapeHtml(r.beneficio_empresa)}
+                
+                <div style="margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:10px;">
+                  <strong style="color:var(--ink); display:block; margin-bottom:4px; font-size:11px; text-transform:uppercase;">Evaluación Técnica (TI):</strong>
+                  <textarea id="eval-${r.id}" style="width:100%; min-height:60px; font-size:12px; padding:6px; border:1px solid #cbd5e1; border-radius:4px; font-family:inherit; resize:vertical; background:#fafafa;" placeholder="Escribe aquí si es viable implementar este recurso en la empresa y pulsa Guardar...">${escapeHtml(r.evaluacion_tecnica || '')}</textarea>
+                  <button class="action-btn" style="background:#0f172a; color:white; padding:4px 8px; font-size:11px; margin-top:4px; width:auto; border:none;" onclick="guardarEvaluacion('${r.id}')">Guardar Notas</button>
+                </div>
               </td>
               <td>${estadoBadge}</td>
               <td>${actionsHTML}</td>
@@ -528,6 +543,160 @@
       } catch (err) {
         alert("Error al actualizar la solicitud: " + err.message);
       }
+    };
+
+    window.guardarEvaluacion = async function(id) {
+      if (!supabaseClient) return;
+      const text = $(`eval-${id}`).value.trim();
+      
+      try {
+        const { error } = await supabaseClient
+          .from('solicitudes_recursos')
+          .update({ evaluacion_tecnica: text })
+          .eq('id', id);
+
+        if (error) throw error;
+        
+        // Actualizar datos localmente
+        const rec = recursos.find(r => r.id === parseInt(id));
+        if (rec) rec.evaluacion_tecnica = text;
+        
+        alert("Evaluación técnica guardada correctamente.");
+      } catch (err) {
+        alert("Error al guardar la evaluación técnica: " + err.message);
+      }
+    };
+
+    window.imprimirSolicitud = function(id) {
+      const rec = recursos.find(r => r.id === parseInt(id));
+      if (!rec) return;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      const logoUrl = "https://raw.githubusercontent.com/alonzo010264/Recursos-Humanos/main/Logo.png";
+      
+      let statusLabel = rec.estado;
+      if (rec.estado === 'ENVIADA') statusLabel = 'Solicitud Enviada';
+      else if (rec.estado === 'EN_REVISION') statusLabel = 'En Revisión (TI/Gerencia)';
+      else if (rec.estado === 'EN_CONTABILIDAD') statusLabel = 'Contabilidad (Pago)';
+      else if (rec.estado === 'VERIFICACION_DISPOSITIVO') statusLabel = 'Verificación del Dispositivo';
+      else if (rec.estado === 'COMPLETADO') statusLabel = 'Completado y Activo';
+      else if (rec.estado === 'RECHAZADO') statusLabel = 'Rechazada / Cancelada';
+
+      const content = `
+        <html>
+        <head>
+          <title>Solicitud de Recurso - ${rec.folio}</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; color: #1a1a1a; padding: 40px; line-height: 1.5; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; }
+            .header img { height: 75px; }
+            .header-title { text-align: right; }
+            .header-title h1 { font-size: 22px; margin: 0; color: #0f172a; text-transform: uppercase; }
+            .header-title p { font-size: 12px; color: #666; margin: 5px 0 0 0; font-weight: bold; }
+            .section-title { font-size: 14px; font-weight: bold; text-transform: uppercase; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 30px; margin-bottom: 15px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+            .field { font-size: 13px; }
+            .field strong { display: block; color: #555; font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+            .text-block { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 13px; margin-bottom: 15px; }
+            .firmas { width: 100%; margin-top: 70px; text-align: center; border-collapse: collapse; page-break-inside: avoid; }
+            .firmas td { width: 33.3%; padding-top: 10px; font-size: 12px; }
+            .badge { display: inline-block; background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+            @media print {
+              body { padding: 0; }
+              .no-print { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="text-align: right; margin-bottom: 20px;">
+            <button onclick="window.print()" style="background:#0f172a; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:bold; cursor:pointer;">Imprimir Documento</button>
+          </div>
+          
+          <div class="header">
+            <img src="${logoUrl}" alt="IVAD Logo" />
+            <div class="header-title">
+              <h1>Solicitud de Recurso</h1>
+              <p>Folio: ${rec.folio}</p>
+              <p>Fecha: ${new Date(rec.created_at).toLocaleDateString('es-ES')}</p>
+            </div>
+          </div>
+
+          <div class="section-title">1. Información del Solicitante</div>
+          <div class="grid">
+            <div class="field">
+              <strong>Colaborador</strong>
+              ${escapeHtml(rec.nombre_colaborador)}
+            </div>
+            <div class="field">
+              <strong>Correo Electrónico</strong>
+              ${escapeHtml(rec.correo_colaborador)}
+            </div>
+            <div class="field">
+              <strong>Puesto / Cargo</strong>
+              ${escapeHtml(rec.puesto)}
+            </div>
+            <div class="field">
+              <strong>Departamento</strong>
+              ${escapeHtml(rec.departamento)}
+            </div>
+          </div>
+
+          <div class="section-title">2. Detalles del Recurso o Suscripción</div>
+          <div class="grid">
+            <div class="field">
+              <strong>Recurso / Curso</strong>
+              ${escapeHtml(rec.nombre_recurso)}
+            </div>
+            <div class="field">
+              <strong>Tipo de Recurso</strong>
+              ${escapeHtml(rec.tipo_recurso)}
+            </div>
+            <div class="field">
+              <strong>Costo Estimado</strong>
+              $${parseFloat(rec.costo_estimado || 0).toFixed(2)}
+            </div>
+            <div class="field">
+              <strong>Estado Actual</strong>
+              <span class="badge">${statusLabel}</span>
+            </div>
+          </div>
+
+          <div class="section-title">3. Justificación y Beneficios Comerciales</div>
+          <div class="field"><strong>¿Por qué es necesario?</strong></div>
+          <div class="text-block">${escapeHtml(rec.justificacion)}</div>
+          
+          <div class="field"><strong>Beneficios para IVAD Home & Goods:</strong></div>
+          <div class="text-block">${escapeHtml(rec.beneficio_empresa)}</div>
+
+          <div class="section-title">4. Evaluación Técnica (TI e Informática)</div>
+          <div class="text-block">${escapeHtml(rec.evaluacion_tecnica || 'Sin evaluación registrada. Completar a mano en la firma.')}</div>
+
+          <div class="section-title">5. Firmas y Aprobaciones</div>
+          <table class="firmas">
+            <tr>
+              <td style="padding-right: 20px;">
+                ___________________________________<br/>
+                <strong>Firma del Solicitante</strong><br/>
+                ${escapeHtml(rec.nombre_colaborador)}
+              </td>
+              <td style="padding-right: 20px; padding-left: 20px;">
+                ___________________________________<br/>
+                <strong>Evaluación TI y Gerencia</strong><br/>
+                Tecnología e Informática
+              </td>
+              <td style="padding-left: 20px;">
+                ___________________________________<br/>
+                <strong>Aprobación de Pago</strong><br/>
+                Departamento de Contabilidad
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      printWindow.document.write(content);
+      printWindow.document.close();
     };
 
     window.deleteRow = async function(table, id) {

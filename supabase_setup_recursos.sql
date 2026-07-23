@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_recursos (
     enlace_referencia text,
     justificacion text NOT NULL,
     beneficio_empresa text NOT NULL,
+    evaluacion_tecnica text, -- Columna para que TI registre la evaluación manual
     estado text DEFAULT 'ENVIADA' NOT NULL, -- ENVIADA, EN_REVISION, EN_CONTABILIDAD, VERIFICACION_DISPOSITIVO, COMPLETADO, RECHAZADO
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
