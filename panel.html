@@ -318,11 +318,72 @@
         rBody.innerHTML = '';
         recursos.forEach(r => {
           let estadoBadge = '';
-          if (r.estado === 'PENDIENTE') estadoBadge = '<span class="badge pendiente" style="background:#fff3e0; color:#e65100;">Pendiente</span>';
-          else if (r.estado === 'APROBADO') estadoBadge = '<span class="badge completado" style="background:#e8f5e9; color:#2e7d32;">Aprobado</span>';
-          else if (r.estado === 'RECHAZADO') estadoBadge = '<span class="badge" style="background:#ffebee; color:#d32f2f;">Rechazado</span>';
+          let bg = '#f1f5f9';
+          let fg = '#475569';
+          let statusText = r.estado;
+
+          if (r.estado === 'ENVIADA') {
+            statusText = 'Enviada';
+            bg = '#e0f7fa';
+            fg = '#006064';
+          } else if (r.estado === 'EN_REVISION') {
+            statusText = 'En Revisión';
+            bg = '#fff3e0';
+            fg = '#e65100';
+          } else if (r.estado === 'EN_CONTABILIDAD') {
+            statusText = 'Contabilidad';
+            bg = '#e8eaf6';
+            fg = '#1a237e';
+          } else if (r.estado === 'VERIFICACION_DISPOSITIVO') {
+            statusText = 'Verificación';
+            bg = '#f3e5f5';
+            fg = '#4a148c';
+          } else if (r.estado === 'COMPLETADO') {
+            statusText = 'Completado';
+            bg = '#e8f5e9';
+            fg = '#1b5e20';
+          } else if (r.estado === 'RECHAZADO') {
+            statusText = 'Rechazada';
+            bg = '#ffebee';
+            fg = '#c62828';
+          }
+
+          estadoBadge = `<span class="badge" style="background:${bg}; color:${fg}; padding:4px 8px; border-radius:4px; font-weight:600; font-size:11px;">${statusText}</span>`;
 
           const refLink = r.enlace_referencia ? `<br/><a href="${escapeHtml(r.enlace_referencia)}" target="_blank" style="font-size:11px; color:#0284c7; text-decoration:none;">🔗 Ver Enlace</a>` : '';
+
+          let actionsHTML = '';
+          if (r.estado === 'ENVIADA') {
+            actionsHTML = `
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="action-btn" style="background:#0284c7; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'EN_REVISION')">Iniciar Revisión</button>
+                <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+              </div>
+            `;
+          } else if (r.estado === 'EN_REVISION') {
+            actionsHTML = `
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="action-btn" style="background:#1a237e; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'EN_CONTABILIDAD')">Enviar a Pago</button>
+                <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+              </div>
+            `;
+          } else if (r.estado === 'EN_CONTABILIDAD') {
+            actionsHTML = `
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="action-btn" style="background:#4a148c; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'VERIFICACION_DISPOSITIVO')">Aprobar Pago</button>
+                <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+              </div>
+            `;
+          } else if (r.estado === 'VERIFICACION_DISPOSITIVO') {
+            actionsHTML = `
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <button class="action-btn" style="background:#1b5e20; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'COMPLETADO')">Activar y Cerrar</button>
+                <button class="action-btn" style="background:#d32f2f; color:white; border:none; padding: 6px 10px;" onclick="updateRecursoEstado('${r.id}', 'RECHAZADO')">Rechazar</button>
+              </div>
+            `;
+          } else {
+            actionsHTML = `<button class="action-btn danger" onclick="deleteRow('solicitudes_recursos', '${r.id}')">Eliminar</button>`;
+          }
 
           rBody.innerHTML += `
             <tr>
@@ -332,7 +393,8 @@
               </td>
               <td>
                 <strong>${escapeHtml(r.nombre_colaborador)}</strong><br/>
-                <span class="hint">${escapeHtml(r.puesto)}</span>
+                <span class="hint" style="font-size:11px; text-transform:none;">${escapeHtml(r.correo_colaborador)}</span><br/>
+                <span class="hint" style="font-size:11px; text-transform:none;">${escapeHtml(r.puesto)}</span>
               </td>
               <td>${escapeHtml(r.departamento)}</td>
               <td>
@@ -348,17 +410,7 @@
                 <br/><strong style="display:inline-block; margin-top:4px;">Beneficio:</strong> ${escapeHtml(r.beneficio_empresa)}
               </td>
               <td>${estadoBadge}</td>
-              <td>
-                ${r.estado === 'PENDIENTE' 
-                  ? `
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                      <button class="action-btn" style="background:#2e7d32; color:white; border:none;" onclick="updateEstado('solicitudes_recursos', '${r.id}', 'APROBADO')">Aprobar</button>
-                      <button class="action-btn" style="background:#d32f2f; color:white; border:none;" onclick="updateEstado('solicitudes_recursos', '${r.id}', 'RECHAZADO')">Rechazar</button>
-                    </div>
-                  `
-                  : `<button class="action-btn danger" onclick="deleteRow('solicitudes_recursos', '${r.id}')">Eliminar</button>`
-                }
-              </td>
+              <td>${actionsHTML}</td>
             </tr>
           `;
         });
@@ -377,11 +429,104 @@
         } else if (table === 'sugerencias_empleados') {
           const item = sugerencias.find(x => x.id === id);
           if (item) item.estado = newState;
-        } else if (table === 'solicitudes_recursos') {
-          const item = recursos.find(x => x.id === id);
-          if (item) item.estado = newState;
         }
         render();
+      }
+    };
+
+    window.updateRecursoEstado = async function(id, newState) {
+      if (!supabaseClient) return;
+      const rec = recursos.find(r => r.id === parseInt(id));
+      if (!rec) return;
+
+      if (!confirm(`¿Seguro que deseas cambiar el estado de la solicitud ${rec.folio} a ${newState}?`)) return;
+
+      try {
+        const { error } = await supabaseClient
+          .from('solicitudes_recursos')
+          .update({ estado: newState })
+          .eq('id', id);
+
+        if (error) throw error;
+
+        // Intentar enviar el correo de actualización vía Resend de forma asíncrona
+        try {
+          let emailSubject = '';
+          let emailBody = '';
+          const trackingLink = `https://gestion.ivadsrl.com/rastreo?folio=${rec.folio}`;
+
+          if (newState === 'EN_REVISION') {
+            emailSubject = `Solicitud en Revisión - Folio ${rec.folio} - IVAD`;
+            emailBody = `
+              <p>Hola <strong>${rec.nombre_colaborador}</strong>,</p>
+              <p>Tu solicitud para el recurso <strong>${rec.nombre_recurso}</strong> ha avanzado a la fase: <strong>En Revisión (TI/Gerencia)</strong>.</p>
+              <p>En esta etapa, el departamento de Tecnología junto con la Gerencia están evaluando la viabilidad técnica del recurso solicitado y sus beneficios comerciales para la empresa.</p>
+            `;
+          } else if (newState === 'EN_CONTABILIDAD') {
+            emailSubject = `Aprobación de Pago - Folio ${rec.folio} - IVAD`;
+            emailBody = `
+              <p>Hola <strong>${rec.nombre_colaborador}</strong>,</p>
+              <p>Tu solicitud para el recurso <strong>${rec.nombre_recurso}</strong> ha sido aprobada por Tecnología y Gerencia.</p>
+              <p>Ha avanzado a la fase: <strong>Contabilidad (Aprobación de Pago)</strong>. Contabilidad procederá con la asignación de fondos y el pago correspondiente.</p>
+            `;
+          } else if (newState === 'VERIFICACION_DISPOSITIVO') {
+            emailSubject = `Verificación de Dispositivo - Folio ${rec.folio} - IVAD`;
+            emailBody = `
+              <p>Hola <strong>${rec.nombre_colaborador}</strong>,</p>
+              <p>El pago de tu solicitud para <strong>${rec.nombre_recurso}</strong> ha sido aprobado y completado.</p>
+              <p>Tu solicitud ha avanzado a la fase: <strong>Verificación del Dispositivo</strong>.</p>
+              <p>De acuerdo con nuestras políticas, el recurso debe ser instalado en un <strong>dispositivo propiedad de la empresa</strong> (computadora o laptop física de la oficina). Por favor, coordina con el departamento de Tecnología para realizar la configuración correspondiente.</p>
+            `;
+          } else if (newState === 'COMPLETADO') {
+            emailSubject = `Suscripción Activa y Completada - Folio ${rec.folio} - IVAD`;
+            emailBody = `
+              <p>Hola <strong>${rec.nombre_colaborador}</strong>,</p>
+              <p>¡Tu solicitud para el recurso <strong>${rec.nombre_recurso}</strong> ha finalizado con éxito!</p>
+              <p>Tu solicitud ha avanzado a la fase: <strong>Completado y Activo</strong>.</p>
+              <p>El recurso ya se encuentra instalado, configurado y listo para su uso en el dispositivo corporativo verificado.</p>
+            `;
+          } else if (newState === 'RECHAZADO') {
+            emailSubject = `Solicitud Denegada - Folio ${rec.folio} - IVAD`;
+            emailBody = `
+              <p>Hola <strong>${rec.nombre_colaborador}</strong>,</p>
+              <p>Lamentablemente, se denegó su solicitud para el recurso <strong>${rec.nombre_recurso}</strong> ya que no vimos los beneficios del servicio claros, o no cumple con las políticas de dispositivo de la empresa (las suscripciones o licencias deben instalarse en computadoras/laptops de la empresa que permanezcan en la oficina y se puedan compartir si es posible).</p>
+              <p>Recuerda que las solicitudes rechazadas tienen un plazo de vencimiento y archivo definitivo. Te invitamos a realizar una nueva solicitud justificando de forma más sólida los beneficios comerciales para la empresa.</p>
+            `;
+          }
+
+          const emailTemplate = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; color: #333;">
+              <h2 style="color: #1a1a1a; border-bottom: 2px solid #b04545; padding-bottom: 10px; font-weight: normal; font-size: 20px;">Seguimiento de Solicitud - IVAD</h2>
+              ${emailBody}
+              <div style="background: #fafafa; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #b04545; font-size: 15px;">
+                <strong>Folio de Seguimiento:</strong> <span style="font-family: monospace; font-weight: bold; color: #b04545;">${rec.folio}</span>
+              </div>
+              <p>Puedes consultar el progreso de la solicitud en tiempo real desde la página de rastreo:</p>
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${trackingLink}" style="background: #b04545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Ver Rastreo Completo</a>
+              </p>
+              <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #777;">Este es un correo automático enviado por el Departamento de Tecnología de IVAD Home & Goods. Por favor no respondas a este mensaje.</p>
+            </div>
+          `;
+
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: rec.correo_colaborador,
+              subject: emailSubject,
+              html: emailTemplate
+            })
+          });
+        } catch (emailErr) {
+          console.error("No se pudo enviar el correo de actualización:", emailErr);
+        }
+
+        // Recargar datos
+        loadData();
+      } catch (err) {
+        alert("Error al actualizar la solicitud: " + err.message);
       }
     };
 

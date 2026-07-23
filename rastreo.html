@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Seguimiento de Solicitud</title>
+  <meta name="description" content="Consulta el estado de tu solicitud de recurso en tiempo real - IVAD Home & Goods" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Estilos del Stepper */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 40px 0;
+    }
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .stepper-progress {
+      position: absolute;
+      top: 18px;
+      left: 10%;
+      width: 0%;
+      height: 3px;
+      background: #0f172a;
+      z-index: 2;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .step-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 3;
+      position: relative;
+      width: 20%;
+    }
+    .step-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      border: 3px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      box-shadow: 0 0 0 1px #e2e8f0;
+      transition: all 0.4s ease;
+    }
+    .step-node.active .step-circle {
+      background: #0f172a;
+      color: #fff;
+      box-shadow: 0 0 0 1px #0f172a, 0 0 12px rgba(15, 23, 42, 0.3);
+    }
+    .step-node.completed .step-circle {
+      background: #22c55e;
+      color: #fff;
+      box-shadow: 0 0 0 1px #22c55e;
+    }
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      margin-top: 10px;
+      text-transform: uppercase;
+      text-align: center;
+      letter-spacing: 0.5px;
+      transition: color 0.4s ease;
+    }
+    .step-node.active .step-label {
+      color: #0f172a;
+    }
+    .step-node.completed .step-label {
+      color: #22c55e;
+    }
+    
+    /* Cajas de Estado */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+      border-top: 1px solid var(--rule);
+      padding-top: 20px;
+    }
+    .detail-item {
+      font-size: 14px;
+    }
+    .detail-item strong {
+      display: block;
+      color: var(--ink-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <img src="https://rbtdahmhaksdvupsmkma.supabase.co/storage/v1/object/public/product-images/logo_transparent.png" alt="IVAD Home & Goods" style="height:80px; width:auto;" />
+    <div class="dept-tag">Tecnología e Informática</div>
+  </header>
+
+  <main class="container">
+    <div class="form-card">
+      <h1 style="text-align: center;">Seguimiento de Solicitud</h1>
+      <p class="desc" style="text-align: center; margin-bottom: 24px;">Ingresa el folio de tu solicitud para verificar la fecha, hora y el estatus actual de evaluación.</p>
+
+      <!-- Buscador de Folio -->
+      <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+        <input type="text" id="folioInput" class="form-control" placeholder="Ej. TI-REC-ABCDE" style="text-transform: uppercase; font-family: monospace; font-size: 16px; font-weight: bold; text-align: center; letter-spacing: 1px;" />
+        <button id="searchBtn" class="btn" style="width: auto; padding: 0 24px;">Buscar</button>
+      </div>
+
+      <!-- Spinner / Loader -->
+      <div id="loader" style="display: none; text-align: center; padding: 20px; color: var(--ink-soft);">
+        Buscando folio en la base de datos...
+      </div>
+
+      <!-- Mensaje de Error -->
+      <div id="errorBox" style="display: none; background: #ffebee; color: #d32f2f; border: 1px solid rgba(211, 47, 47, 0.2); padding: 16px; border-radius: 8px; font-size: 14px; text-align: center; margin-top: 10px;">
+        No se encontró ninguna solicitud registrada con ese folio. Verifica y vuelve a intentarlo.
+      </div>
+
+      <!-- Dashboard de Resultados -->
+      <div id="resultBox" style="display: none; margin-top: 20px;">
+        <div style="background: #f8fafc; border: 1px solid var(--rule); border-radius: 8px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-size: 12px; color: var(--ink-soft); font-weight: bold; text-transform: uppercase;">Detalles de la Solicitud</span>
+            <h2 id="resultFolio" style="font-family: monospace; color: var(--ink); margin-top: 2px;">TI-REC-XXXXX</h2>
+          </div>
+          <div id="statusBadge" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+            Estado
+          </div>
+        </div>
+
+        <!-- Stepper Visual -->
+        <div class="stepper" id="stepperContainer">
+          <div class="stepper-progress" id="stepperLine"></div>
+          
+          <div class="step-node" id="step-env">
+            <div class="step-circle">1</div>
+            <div class="step-label">Enviada</div>
+          </div>
+          <div class="step-node" id="step-rev">
+            <div class="step-circle">2</div>
+            <div class="step-label">En Revisión</div>
+          </div>
+          <div class="step-node" id="step-cont">
+            <div class="step-circle">3</div>
+            <div class="step-label">Contabilidad</div>
+          </div>
+          <div class="step-node" id="step-ver">
+            <div class="step-circle">4</div>
+            <div class="step-label">Verificación</div>
+          </div>
+          <div class="step-node" id="step-comp">
+            <div class="step-circle">5</div>
+            <div class="step-label">Completado</div>
+          </div>
+        </div>
+
+        <!-- Alerta de Rechazo -->
+        <div id="rejectionAlert" style="display: none; background: #ffebee; border: 1px solid rgba(211, 47, 47, 0.2); border-radius: 8px; padding: 20px; margin: 30px 0; color: #c62828;">
+          <h4 style="font-size: 15px; font-weight: bold; margin-bottom: 6px;">Solicitud Denegada</h4>
+          <p style="font-size: 13.5px; line-height: 1.6; margin-bottom: 12px;">Lamentablemente, su solicitud ha sido denegada. Esto puede deberse a que no se detallaron de forma clara los beneficios comerciales del servicio para la empresa, o no se cumple con las políticas de dispositivo corporativo (las suscripciones o licencias deben instalarse en computadoras/laptops que permanezcan físicamente en las oficinas de la empresa y se puedan compartir si es posible).</p>
+          <p style="font-size: 13px; font-weight: bold; border-top: 1px solid rgba(211,47,47,0.1); padding-top: 10px;">Nota: Recuerde que las solicitudes rechazadas tienen un plazo de vencimiento y archivo definitivo. Puede realizar una nueva solicitud justificando de forma más sólida los beneficios comerciales.</p>
+        </div>
+
+        <!-- Información Detallada -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <strong>Colaborador Solicitante</strong>
+            <span id="colaboradorText">Juan Pérez</span>
+          </div>
+          <div class="detail-item">
+            <strong>Departamento / Puesto</strong>
+            <span id="puestoText">Logística</span>
+          </div>
+          <div class="detail-item">
+            <strong>Recurso / Curso Solicitado</strong>
+            <span id="recursoText">Curso de Excel</span>
+          </div>
+          <div class="detail-item">
+            <strong>Fecha de Envío</strong>
+            <span id="fechaText">10/10/2026</span>
+          </div>
+          <div class="detail-item" style="grid-column: 1 / -1;">
+            <strong>Justificación</strong>
+            <span id="justificacionText" style="display: block; background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid var(--rule); margin-top: 4px; font-size: 13px;">—</span>
+          </div>
+          <div class="detail-item" style="grid-column: 1 / -1;">
+            <strong>Beneficio para la Empresa</strong>
+            <span id="beneficiosText" style="display: block; background: #fafafa; padding: 12px; border-radius: 6px; border: 1px solid var(--rule); margin-top: 4px; font-size: 13px;">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    
+    // Supabase config
+    const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
+    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    
+    let supabaseClient = null;
+    try {
+      if (typeof window.supabase !== 'undefined') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase:", e);
+    }
+
+    async function buscarSolicitud(folio) {
+      if (!folio) return;
+      
+      $('errorBox').style.display = 'none';
+      $('resultBox').style.display = 'none';
+      $('loader').style.display = 'block';
+
+      if (!supabaseClient) {
+        alert("Error de conexión a la base de datos.");
+        $('loader').style.display = 'none';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('solicitudes_recursos')
+          .select('*')
+          .eq('folio', folio.trim().toUpperCase())
+          .single();
+
+        if (error || !data) {
+          $('errorBox').style.display = 'block';
+          $('loader').style.display = 'none';
+          return;
+        }
+
+        // Mostrar datos
+        $('resultFolio').textContent = data.folio;
+        $('colaboradorText').textContent = data.nombre_colaborador;
+        $('puestoText').textContent = `${data.puesto} (${data.departamento})`;
+        $('recursoText').textContent = `${data.nombre_recurso} (${data.tipo_recurso})`;
+        $('fechaText').textContent = new Date(data.created_at).toLocaleDateString('es-ES') + ' ' + new Date(data.created_at).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+        $('justificacionText').textContent = data.justificacion;
+        $('beneficiosText').textContent = data.beneficio_empresa;
+
+        // Configurar Estado y Stepper
+        const estado = data.estado;
+        const badge = $('statusBadge');
+        
+        // Reset Stepper
+        const steps = ['step-env', 'step-rev', 'step-cont', 'step-ver', 'step-comp'];
+        steps.forEach(s => {
+          $(s).className = 'step-node';
+        });
+        $('stepperLine').style.width = '0%';
+        $('stepperContainer').style.display = 'flex';
+        $('rejectionAlert').style.display = 'none';
+
+        if (estado === 'RECHAZADO') {
+          badge.textContent = 'Denegada';
+          badge.style.background = '#ffebee';
+          badge.style.color = '#c62828';
+          $('stepperContainer').style.display = 'none'; // Ocultar stepper si se rechazó
+          $('rejectionAlert').style.display = 'block';
+        } else {
+          let activeIndex = 0; // Enviada
+          let statusText = 'Enviada';
+          let bg = '#fff3e0';
+          let fg = '#e65100';
+
+          if (estado === 'ENVIADA') {
+            activeIndex = 0;
+            statusText = 'Solicitud Enviada';
+            bg = '#e0f7fa';
+            fg = '#006064';
+          } else if (estado === 'EN_REVISION') {
+            activeIndex = 1;
+            statusText = 'En Revisión (TI/Gerencia)';
+            bg = '#fff3e0';
+            fg = '#e65100';
+          } else if (estado === 'EN_CONTABILIDAD') {
+            activeIndex = 2;
+            statusText = 'Contabilidad (Pago)';
+            bg = '#e8eaf6';
+            fg = '#1a237e';
+          } else if (estado === 'VERIFICACION_DISPOSITIVO') {
+            activeIndex = 3;
+            statusText = 'Verificación de Dispositivo';
+            bg = '#f3e5f5';
+            fg = '#4a148c';
+          } else if (estado === 'COMPLETADO') {
+            activeIndex = 4;
+            statusText = 'Completado y Activo';
+            bg = '#e8f5e9';
+            fg = '#1b5e20';
+          }
+
+          badge.textContent = statusText;
+          badge.style.background = bg;
+          badge.style.color = fg;
+
+          // Rellenar Stepper
+          for (let i = 0; i <= activeIndex; i++) {
+            if (i < activeIndex) {
+              $(steps[i]).className = 'step-node completed';
+            } else if (i === activeIndex) {
+              $(steps[i]).className = 'step-node active';
+            }
+          }
+          // Cambiar ancho de línea de progreso: 0%, 25%, 50%, 75%, 100%
+          const progressWidths = [0, 25, 50, 75, 100];
+          $('stepperLine').style.width = `${progressWidths[activeIndex]}%`;
+        }
+
+        $('resultBox').style.display = 'block';
+        $('loader').style.display = 'none';
+      } catch (err) {
+        console.error(err);
+        $('errorBox').style.display = 'block';
+        $('loader').style.display = 'none';
+      }
+    }
+
+    $('searchBtn').addEventListener('click', () => {
+      const folio = $('folioInput').value.trim();
+      buscarSolicitud(folio);
+    });
+
+    $('folioInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        buscarSolicitud($('folioInput').value.trim());
+      }
+    });
+
+    // Rastrear automáticamente si viene el parámetro ?folio= en la URL
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const folio = params.get('folio');
+      if (folio) {
+        $('folioInput').value = folio.toUpperCase();
+        buscarSolicitud(folio);
+      }
+    });
+  </script>
+</body>
+</html>

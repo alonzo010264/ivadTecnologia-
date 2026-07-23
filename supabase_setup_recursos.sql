@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_recursos (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     folio text UNIQUE NOT NULL,
     nombre_colaborador text NOT NULL,
+    correo_colaborador text NOT NULL,
     puesto text NOT NULL,
     departamento text NOT NULL,
     tipo_recurso text NOT NULL,
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_recursos (
     enlace_referencia text,
     justificacion text NOT NULL,
     beneficio_empresa text NOT NULL,
-    estado text DEFAULT 'PENDIENTE' NOT NULL, -- PENDIENTE, APROBADO, RECHAZADO
+    estado text DEFAULT 'ENVIADA' NOT NULL, -- ENVIADA, EN_REVISION, EN_CONTABILIDAD, VERIFICACION_DISPOSITIVO, COMPLETADO, RECHAZADO
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 

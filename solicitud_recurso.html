@@ -34,6 +34,11 @@
         </div>
 
         <div class="form-group">
+          <label for="correo">Correo Electrónico</label>
+          <input type="email" id="correo" class="form-control" placeholder="Ej. carlos.mendoza@ivadsrl.com" required />
+        </div>
+
+        <div class="form-group">
           <label for="puesto">Puesto / Cargo</label>
           <input type="text" id="puesto" class="form-control" placeholder="Ej. Analista de Logística" required />
         </div>
@@ -95,6 +100,19 @@
           <textarea id="beneficio_empresa" class="form-control" rows="4" placeholder="Ej. Reducirá el tiempo de reporte en un 30% / Permitirá capacitar al equipo..." required></textarea>
         </div>
 
+        <!-- SECCIÓN 4: POLÍTICAS -->
+        <div class="form-group" style="margin-top: 24px; border-top: 1px solid var(--rule); padding-top: 20px;">
+          <label style="display: flex; align-items: flex-start; gap: 10px; font-weight: normal; cursor: pointer; font-size: 14px; line-height: 1.5; color: #555;">
+            <input type="checkbox" id="acepta_politicas" required style="margin-top: 4px; transform: scale(1.15);" />
+            <span>
+              Acepto las <strong>Políticas de Solicitud de Recursos</strong> de IVAD:<br/>
+              • La suscripción o programa solicitado debe ser instalado y utilizado en un <strong>dispositivo de la empresa</strong> (computadora o laptop física de la oficina) y poder compartirse con el equipo si la herramienta lo permite.<br/>
+              • El uso del recurso es exclusivo para labores de la empresa y debe aportar beneficios claros de productividad.<br/>
+              • Las solicitudes rechazadas se considerarán canceladas de forma definitiva tras su vencimiento.
+            </span>
+          </label>
+        </div>
+
         <button type="submit" class="btn" id="submitBtn" style="margin-top: 15px;">Enviar Solicitud a Evaluación</button>
       </form>
     </div>
@@ -107,7 +125,10 @@
       <p style="margin-bottom: 10px; font-size: 13px; font-weight: bold;">Folio de Seguimiento:</p>
       <div class="folio-box" id="folioNum"></div>
       
-      <div>
+      <p style="font-size: 13px; color: #555; margin-top: 10px;">Hemos enviado un correo de confirmación a tu dirección de correo electrónico con los detalles y el enlace para realizar el seguimiento.</p>
+      
+      <div style="margin-top: 20px; display: flex; gap: 12px; justify-content: center;">
+        <a href="/" class="btn" style="width: auto; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; background: #555;">Volver al Portal</a>
         <button class="btn" id="againBtn" style="width: auto;">Hacer otra solicitud</button>
       </div>
     </div>
@@ -140,19 +161,23 @@
       err.style.display = 'none';
 
       const folio = "TI-REC-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+      const colName = $('nombre').value.trim();
+      const colEmail = $('correo').value.trim();
+      const recName = $('nombre_recurso').value.trim();
 
       const payload = {
         folio: folio,
-        nombre_colaborador: $('nombre').value.trim(),
+        nombre_colaborador: colName,
+        correo_colaborador: colEmail,
         puesto: $('puesto').value.trim(),
         departamento: $('departamento').value,
         tipo_recurso: $('tipo_recurso').value,
-        nombre_recurso: $('nombre_recurso').value.trim(),
+        nombre_recurso: recName,
         costo_estimado: parseFloat($('costo_estimado').value) || 0,
         enlace_referencia: $('enlace_referencia').value.trim() || null,
         justificacion: $('justificacion').value.trim(),
         beneficio_empresa: $('beneficio_empresa').value.trim(),
-        estado: 'PENDIENTE'
+        estado: 'ENVIADA'
       };
 
       if (!supabaseClient) {
@@ -166,6 +191,41 @@
       try {
         const { error } = await supabaseClient.from('solicitudes_recursos').insert([payload]);
         if (error) throw error;
+
+        // Intentar enviar correo con Resend de forma asíncrona sin bloquear la UI
+        try {
+          const trackingLink = `https://gestion.ivadsrl.com/rastreo?folio=${folio}`;
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; color: #333;">
+              <h2 style="color: #1a1a1a; border-bottom: 2px solid #b04545; padding-bottom: 10px; font-weight: normal; font-size: 20px;">Solicitud Recibida - IVAD</h2>
+              <p>Hola <strong>${colName}</strong>,</p>
+              <p>Hemos recibido correctamente tu solicitud para el recurso <strong>${recName}</strong>.</p>
+              <div style="background: #fafafa; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #b04545; font-size: 15px;">
+                <strong>Folio de Seguimiento:</strong> <span style="font-family: monospace; font-weight: bold; color: #b04545;">${folio}</span>
+              </div>
+              <p>El estatus inicial de tu solicitud es: <strong>Solicitud Enviada</strong>.</p>
+              <p>El departamento de Tecnología junto con la Gerencia evaluarán la viabilidad técnica y que se cumpla la política de instalación en dispositivos corporativos de la empresa.</p>
+              <p>Puedes consultar el estatus en tiempo real de tu solicitud y el progreso de las revisiones ingresando tu folio en la página de rastreo:</p>
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${trackingLink}" style="background: #b04545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Rastrear Mi Solicitud</a>
+              </p>
+              <hr style="border: none; border-top: 1px solid #eaeaea; margin: 30px 0;" />
+              <p style="font-size: 12px; color: #777;">Este es un correo automático enviado por el Departamento de Tecnología de IVAD Home & Goods. Por favor no respondas a este mensaje.</p>
+            </div>
+          `;
+
+          await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              to: colEmail,
+              subject: `Solicitud Recibida - Folio ${folio} - IVAD`,
+              html: emailHtml
+            })
+          });
+        } catch (emailErr) {
+          console.error("No se pudo enviar el correo de confirmación:", emailErr);
+        }
 
         // Éxito
         $('formContainer').hidden = true;
