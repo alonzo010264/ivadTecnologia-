@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Solicitud de Recursos y Cursos</title>
+  <meta name="description" content="Solicitud de programas, licencias, cursos y capacitaciones - IVAD Home & Goods" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <img src="https://rbtdahmhaksdvupsmkma.supabase.co/storage/v1/object/public/product-images/logo_transparent.png" alt="IVAD Home & Goods" style="height:80px; width:auto;" />
+    <div class="dept-tag">Tecnología e Informática</div>
+  </header>
+
+  <main class="container">
+    <div class="form-card" id="formContainer">
+      <h1>Solicitud de Recursos y Cursos</h1>
+      <p class="desc">Utiliza este formulario para solicitar nuevas herramientas digitales (programas, licencias, software), cursos, talleres o capacitaciones. La solicitud será evaluada por Tecnología y Gerencia para determinar su viabilidad y necesidad.</p>
+      
+      <div id="errorMsg" style="display:none; background:var(--danger); color:white; padding:12px; border-radius:6px; margin-bottom:20px; font-size:14px;"></div>
+
+      <form id="recursoForm">
+        
+        <!-- SECCIÓN 1: DATOS DEL COLABORADOR -->
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); border-bottom: 1.5px solid var(--rule); padding-bottom: 6px; margin-bottom: 16px; margin-top: 10px;">1. Datos del Solicitante</h3>
+        
+        <div class="form-group">
+          <label for="nombre">Nombre Completo</label>
+          <input type="text" id="nombre" class="form-control" placeholder="Ej. Carlos Mendoza" required />
+        </div>
+
+        <div class="form-group">
+          <label for="puesto">Puesto / Cargo</label>
+          <input type="text" id="puesto" class="form-control" placeholder="Ej. Analista de Logística" required />
+        </div>
+
+        <div class="form-group">
+          <label for="departamento">Departamento</label>
+          <select id="departamento" class="form-control" required>
+            <option value="" disabled selected>Seleccione su departamento...</option>
+            <option value="Ventas">Ventas</option>
+            <option value="Logística">Logística / Almacén</option>
+            <option value="Administración">Administración / Contabilidad</option>
+            <option value="Recursos Humanos">Recursos Humanos</option>
+            <option value="Atención al Cliente">Atención al Cliente</option>
+            <option value="Gerencia">Gerencia</option>
+            <option value="Tecnología">Tecnología e Informática</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <!-- SECCIÓN 2: DETALLES DEL RECURSO -->
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); border-bottom: 1.5px solid var(--rule); padding-bottom: 6px; margin-bottom: 16px; margin-top: 24px;">2. Detalles del Recurso o Capacitación</h3>
+        
+        <div class="form-group">
+          <label for="tipo_recurso">Tipo de Recurso</label>
+          <select id="tipo_recurso" class="form-control" required>
+            <option value="" disabled selected>Seleccione el tipo de recurso...</option>
+            <option value="Software / Programa">Software / Programa / Licencia Digital</option>
+            <option value="Curso / Capacitación">Curso / Capacitación / Taller</option>
+            <option value="Dispositivo / Hardware">Dispositivo / Hardware de Trabajo</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="nombre_recurso">Nombre del Recurso / Curso</label>
+          <input type="text" id="nombre_recurso" class="form-control" placeholder="Ej. Licencia de Zoom Pro / Taller de Excel Financiero" required />
+        </div>
+
+        <div class="form-group">
+          <label for="costo_estimado">Costo Estimado (DOP / USD)</label>
+          <input type="number" id="costo_estimado" class="form-control" placeholder="Ej. 15 (Indique 0 si es gratuito o desconoce)" min="0" step="0.01" required />
+        </div>
+
+        <div class="form-group">
+          <label for="enlace_referencia">Enlace de Referencia (Web del recurso o programa)</label>
+          <input type="url" id="enlace_referencia" class="form-control" placeholder="Ej. https://zoom.us/pricing (Opcional)" />
+        </div>
+
+        <!-- SECCIÓN 3: JUSTIFICACIÓN -->
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 18px; color: var(--ink); border-bottom: 1.5px solid var(--rule); padding-bottom: 6px; margin-bottom: 16px; margin-top: 24px;">3. Justificación y Necesidad</h3>
+
+        <div class="form-group">
+          <label for="justificacion">¿Por qué es necesario este recurso / curso?</label>
+          <textarea id="justificacion" class="form-control" rows="4" placeholder="Explique detalladamente qué necesidades cubre este recurso..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="beneficio_empresa">¿Qué beneficio o mejora traerá a tu trabajo y a IVAD?</label>
+          <textarea id="beneficio_empresa" class="form-control" rows="4" placeholder="Ej. Reducirá el tiempo de reporte en un 30% / Permitirá capacitar al equipo..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn" style="margin-top: 15px;">Enviar Solicitud a Evaluación</button>
+      </form>
+    </div>
+
+    <!-- Pantalla de Éxito -->
+    <div class="form-card success-state" id="successContainer" hidden>
+      <h2>¡Solicitud Enviada!</h2>
+      <p>La solicitud de recurso ha sido enviada exitosamente. El departamento de Tecnología e Informática junto con Gerencia evaluarán tu requerimiento y te notificarán a la brevedad.</p>
+      
+      <p style="margin-bottom: 10px; font-size: 13px; font-weight: bold;">Folio de Seguimiento:</p>
+      <div class="folio-box" id="folioNum"></div>
+      
+      <div>
+        <button class="btn" id="againBtn" style="width: auto;">Hacer otra solicitud</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    
+    // Supabase config
+    const supabaseUrl = 'https://rbtdahmhaksdvupsmkma.supabase.co';
+    const supabaseKey = 'sb_publishable_GP8roaav6iIHoQfFp7ncBg_slCdxC7S';
+    
+    let supabaseClient = null;
+    try {
+      if (typeof window.supabase !== 'undefined') {
+        supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+      }
+    } catch (e) {
+      console.error("Error al inicializar Supabase:", e);
+    }
+
+    $('recursoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = $('submitBtn');
+      const err = $('errorMsg');
+      btn.disabled = true;
+      btn.textContent = 'Enviando a evaluación...';
+      err.style.display = 'none';
+
+      const folio = "TI-REC-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+      const payload = {
+        folio: folio,
+        nombre_colaborador: $('nombre').value.trim(),
+        puesto: $('puesto').value.trim(),
+        departamento: $('departamento').value,
+        tipo_recurso: $('tipo_recurso').value,
+        nombre_recurso: $('nombre_recurso').value.trim(),
+        costo_estimado: parseFloat($('costo_estimado').value) || 0,
+        enlace_referencia: $('enlace_referencia').value.trim() || null,
+        justificacion: $('justificacion').value.trim(),
+        beneficio_empresa: $('beneficio_empresa').value.trim(),
+        estado: 'PENDIENTE'
+      };
+
+      if (!supabaseClient) {
+        err.textContent = 'Error: No se pudo conectar a la base de datos. Verifica tu conexión.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Enviar Solicitud a Evaluación';
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient.from('solicitudes_recursos').insert([payload]);
+        if (error) throw error;
+
+        // Éxito
+        $('formContainer').hidden = true;
+        $('folioNum').textContent = folio;
+        $('successContainer').hidden = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        console.error(error);
+        err.textContent = 'Ocurrió un error al enviar tu solicitud: ' + (error.message || 'Verifica tu conexión.');
+        err.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviar Solicitud a Evaluación';
+      }
+    });
+
+    $('againBtn').addEventListener('click', () => {
+      $('recursoForm').reset();
+      $('successContainer').hidden = true;
+      $('formContainer').hidden = false;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
