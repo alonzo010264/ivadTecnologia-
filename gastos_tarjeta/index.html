@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/gastos_tarjeta/styles.css" />
   <style>
-    /* CSS CRÍTICO EMBEBIDO PARA GARANTIZAR RENDERIZADO PERFECTO INMEDIATO */
     :root {
       --bg: #f8fafc;
       --card-bg: #ffffff;
@@ -54,7 +53,6 @@
       line-height: 1.5;
     }
 
-    /* TOP HEADER & NAVBAR */
     .top-navbar {
       background: #ffffff;
       border-bottom: 1px solid var(--border);
@@ -155,8 +153,6 @@
       background: transparent;
       border: none;
       cursor: pointer;
-      font-size: 18px;
-      position: relative;
       color: var(--text-muted);
       display: flex;
       align-items: center;
@@ -164,10 +160,23 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
+      transition: all 0.15s ease;
+      position: relative;
     }
 
     .notification-btn:hover {
       background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .notification-indicator {
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--indigo);
+      border-radius: 50%;
     }
 
     .user-profile {
@@ -207,14 +216,12 @@
       color: var(--text-muted);
     }
 
-    /* MAIN CONTAINER */
     .dashboard-container {
       max-width: 1380px;
       margin: 0 auto;
       padding: 32px 32px 64px 32px;
     }
 
-    /* TITLE ACTION BAR */
     .dashboard-header {
       display: flex;
       justify-content: space-between;
@@ -287,7 +294,6 @@
       background: #1e293b;
     }
 
-    /* METRICS ROW (4 CARDS) */
     .metrics-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -351,7 +357,6 @@
       color: var(--text-muted);
     }
 
-    /* MIDDLE TWO-COLUMN ROW */
     .split-row {
       display: grid;
       grid-template-columns: 1fr 1.6fr;
@@ -444,7 +449,6 @@
       color: var(--text-muted);
     }
 
-    /* CORREOS RECIBIDOS LIST */
     .emails-list {
       display: flex;
       flex-direction: column;
@@ -492,7 +496,6 @@
       font-size: 12px;
     }
 
-    /* BADGES */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -524,7 +527,6 @@
       color: var(--purple);
     }
 
-    /* TABLE SECTION: ÚLTIMOS GASTOS */
     .table-section {
       background: #ffffff;
       border: 1px solid var(--border);
@@ -587,9 +589,8 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      font-size: 16px;
       cursor: pointer;
-      padding: 4px;
+      padding: 6px;
       border-radius: 4px;
       display: inline-flex;
       align-items: center;
@@ -601,7 +602,6 @@
       color: var(--text-main);
     }
 
-    /* TABLE FOOTER */
     .table-footer {
       padding: 16px 24px;
       display: flex;
@@ -645,7 +645,6 @@
       background: var(--indigo-soft);
     }
 
-    /* BOTTOM FOOTER */
     .app-footer {
       max-width: 1380px;
       margin: 32px auto 0 auto;
@@ -665,7 +664,6 @@
       gap: 6px;
     }
 
-    /* MODAL OVERLAYS */
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -709,12 +707,14 @@
       font-size: 17px;
       font-weight: 700;
       color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .modal-close {
       background: none;
       border: none;
-      font-size: 20px;
       cursor: pointer;
       color: var(--text-muted);
       width: 32px;
@@ -773,7 +773,6 @@
       box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
 
-    /* TOAST */
     .toast-msg {
       position: fixed;
       bottom: 24px;
@@ -791,54 +790,23 @@
       gap: 10px;
     }
 
-    /* RESPONSIVE */
     @media (max-width: 1100px) {
-      .metrics-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .split-row {
-        grid-template-columns: 1fr;
-      }
-      .email-item {
-        grid-template-columns: 110px 1fr 90px 90px;
-      }
-      .email-item .email-card, .email-item .email-bank {
-        display: none;
-      }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .split-row { grid-template-columns: 1fr; }
+      .email-item { grid-template-columns: 110px 1fr 90px 90px; }
+      .email-item .email-card, .email-item .email-bank { display: none; }
     }
 
     @media (max-width: 768px) {
-      .top-navbar {
-        padding: 0 16px;
-      }
-      .nav-tabs {
-        display: none;
-      }
-      .dashboard-container {
-        padding: 20px 16px;
-      }
-      .dashboard-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .header-actions {
-        flex-direction: column;
-      }
-      .header-actions .btn {
-        width: 100%;
-        justify-content: center;
-      }
-      .metrics-row {
-        grid-template-columns: 1fr;
-      }
-      .provider-grid {
-        grid-template-columns: 1fr;
-      }
-      .app-footer {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-      }
+      .top-navbar { padding: 0 16px; }
+      .nav-tabs { display: none; }
+      .dashboard-container { padding: 20px 16px; }
+      .dashboard-header { flex-direction: column; align-items: stretch; }
+      .header-actions { flex-direction: column; }
+      .header-actions .btn { width: 100%; justify-content: center; }
+      .metrics-row { grid-template-columns: 1fr; }
+      .provider-grid { grid-template-columns: 1fr; }
+      .app-footer { flex-direction: column; gap: 12px; text-align: center; }
     }
   </style>
 </head>
@@ -865,11 +833,18 @@
     <div class="user-group">
       <div class="dept-selector" id="btnDeptSelect">
         <span>Depto. Gestión de Pagos</span>
-        <span style="font-size: 11px;">⌵</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
       </div>
 
+      <!-- Campanita bonita vectorial -->
       <button class="notification-btn" title="Notificaciones">
-        🔔
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+        </svg>
+        <span class="notification-indicator"></span>
       </button>
 
       <div class="user-profile">
@@ -894,11 +869,18 @@
       </div>
 
       <div class="header-actions">
+        <!-- Botón con Sparkle SVG -->
         <button id="btnOpenAiModal" class="btn btn-secondary">
-          <span style="color: #6366f1;">✨</span> Analizar correo con IA
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          </svg>
+          <span>Analizar correo con IA</span>
         </button>
         <button id="btnOpenManualModal" class="btn btn-primary">
-          + Registrar gasto
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+          <span>Registrar gasto</span>
         </button>
       </div>
     </section>
@@ -989,8 +971,12 @@
           </button>
         </div>
 
+        <!-- Candado SVG en lugar de emoji -->
         <div class="security-notice">
-          <span>🔒</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
           <span>Acceso limitado · No almacenamos contraseñas del banco</span>
         </div>
       </div>
@@ -1003,55 +989,7 @@
         </div>
 
         <div class="emails-list" id="emailsListContainer">
-          <!-- Item 1 -->
-          <div class="email-item">
-            <div class="email-date">30 may 2025 09:15</div>
-            <div class="email-bank">Banco Popular</div>
-            <div class="email-merchant">La Sirena</div>
-            <div class="email-amount">RD$45,230.00</div>
-            <div class="email-card">•••• 1234</div>
-            <div><span class="badge badge-conciliado">Conciliado</span></div>
-          </div>
-
-          <!-- Item 2 -->
-          <div class="email-item">
-            <div class="email-date">30 may 2025 08:42</div>
-            <div class="email-bank">Banreservas</div>
-            <div class="email-merchant">PriceSmart</div>
-            <div class="email-amount">RD$12,850.00</div>
-            <div class="email-card">•••• 1234</div>
-            <div><span class="badge badge-conciliado">Conciliado</span></div>
-          </div>
-
-          <!-- Item 3 -->
-          <div class="email-item">
-            <div class="email-date">29 may 2025 19:03</div>
-            <div class="email-bank">Scotiabank</div>
-            <div class="email-merchant">Plaza Lama</div>
-            <div class="email-amount">RD$8,975.00</div>
-            <div class="email-card">•••• 1234</div>
-            <div><span class="badge badge-conciliado">Conciliado</span></div>
-          </div>
-
-          <!-- Item 4 -->
-          <div class="email-item">
-            <div class="email-date">29 may 2025 14:21</div>
-            <div class="email-bank">Banco Popular</div>
-            <div class="email-merchant">Office Depot</div>
-            <div class="email-amount">RD$25,640.00</div>
-            <div class="email-card">•••• 1234</div>
-            <div><span class="badge badge-conciliado">Conciliado</span></div>
-          </div>
-
-          <!-- Item 5 -->
-          <div class="email-item">
-            <div class="email-date">29 may 2025 11:47</div>
-            <div class="email-bank">Banreservas</div>
-            <div class="email-merchant">Sirena Market</div>
-            <div class="email-amount">RD$6,320.00</div>
-            <div class="email-card">•••• 1234</div>
-            <div><span class="badge badge-conciliado">Conciliado</span></div>
-          </div>
+          <!-- Dinámico -->
         </div>
       </div>
 
@@ -1078,7 +1016,7 @@
             </tr>
           </thead>
           <tbody id="transactionsTableBody">
-            <!-- Filas dinámicas generadas desde script.js -->
+            <!-- Dinámico -->
           </tbody>
         </table>
       </div>
@@ -1102,7 +1040,10 @@
   <!-- App Bottom Footer -->
   <footer class="app-footer">
     <div class="app-footer-left">
-      <span>🛡️</span>
+      <!-- Escudo SVG de seguridad -->
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
       <span>Acceso limitado · No almacenamos contraseñas del banco</span>
     </div>
     <div class="app-footer-center">
@@ -1120,14 +1061,17 @@
     <div class="modal-card">
       <div class="modal-header">
         <h3 id="modalConnectTitle">Conectar Correo Bancario</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
       <div class="modal-body">
         <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.55;">
           Conecta el buzón corporativo que recibe los avisos de consumo de tarjetas (Popular, Reservas, BHD, Scotiabank). La IA leerá automáticamente cada correo entrante, verificará que sea tarjeta y extraerá el comercio y monto.
         </p>
 
-        <!-- Formulario IMAP / Servidor -->
         <form id="emailConnectForm">
           <div class="form-group">
             <label>Proveedor o Tipo de Conexión</label>
@@ -1163,8 +1107,13 @@
           </div>
 
           <div id="forwardingInfo" style="background: var(--indigo-soft); border: 1px solid #c7d2fe; border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;">
-            <strong style="color: var(--indigo); font-size: 13px; display: block; margin-bottom: 4px;">📬 Dirección de Recepción Automática:</strong>
-            <code style="background: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700; color: #1e1b4b; display: block; margin: 6px 0;">gastos@ivadsrl.com</code>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+              <strong style="color: var(--indigo); font-size: 13px;">Dirección de Recepción Automática:</strong>
+            </div>
+            <code style="background: #ffffff; padding: 6px 10px; border-radius: 4px; font-weight: 700; color: #1e1b4b; display: block; margin: 6px 0; border: 1px solid #e0e7ff;">gastos@ivadsrl.com</code>
             <p style="font-size: 12px; color: #4338ca; line-height: 1.5;">
               Crea una regla en tu correo bancario para reenviar las alertas a esta dirección. Nuestro webhook extraerá el gasto automáticamente cada vez que recibas una alerta bancaria.
             </p>
@@ -1179,7 +1128,10 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
         <button type="button" id="btnSaveEmailConn" class="btn btn-primary">
-          💾 Guardar y Activar Conexión
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <span>Guardar y Activar Conexión</span>
         </button>
       </div>
     </div>
@@ -1191,8 +1143,17 @@
   <div class="modal-backdrop" id="modalAi" hidden>
     <div class="modal-card">
       <div class="modal-header">
-        <h3>✨ Analizar Correo Bancario con IA</h3>
-        <button class="modal-close">&times;</button>
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+          </svg>
+          <span>Analizar Correo Bancario con IA</span>
+        </h3>
+        <button class="modal-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
       <div class="modal-body">
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
@@ -1218,14 +1179,22 @@
 
         <div style="text-align: right; margin-bottom: 16px;">
           <button type="button" id="btnProcessAi" class="btn btn-primary">
-            🔍 Analizar y Extraer con IA
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+            <span>Analizar y Extraer con IA</span>
           </button>
         </div>
 
         <!-- Vista previa de extracción con IA -->
         <div id="aiResultBox" style="display: none; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-            <strong style="color: var(--text-main); font-size: 13.5px;">✅ Consumo de Tarjeta Extraído:</strong>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6 9 17l-5-5"/>
+              </svg>
+              <strong style="color: var(--text-main); font-size: 13.5px;">Consumo de Tarjeta Extraído:</strong>
+            </div>
             <span class="badge badge-conciliado">Válido</span>
           </div>
 
@@ -1261,7 +1230,10 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
         <button type="button" id="btnConfirmAi" class="btn btn-primary" style="display: none;">
-          💾 Confirmar y Agregar a la Lista
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <span>Confirmar y Agregar a la Lista</span>
         </button>
       </div>
     </div>
@@ -1273,8 +1245,17 @@
   <div class="modal-backdrop" id="modalManual" hidden>
     <div class="modal-card">
       <div class="modal-header">
-        <h3>+ Registrar Gasto con Tarjeta</h3>
-        <button class="modal-close">&times;</button>
+        <h3>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+          </svg>
+          <span>Registrar Gasto con Tarjeta</span>
+        </h3>
+        <button class="modal-close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
       <form id="manualForm">
         <div class="modal-body">
@@ -1345,7 +1326,12 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Consumo</button>
+          <button type="submit" class="btn btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+            <span>Guardar Consumo</span>
+          </button>
         </div>
       </form>
     </div>

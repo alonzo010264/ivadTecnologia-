@@ -368,7 +368,11 @@ function renderTable() {
         </td>
         <td style="color: var(--text-muted); font-size: 12.5px;">${escapeHtml(aprobacionLabel)}</td>
         <td>
-          <button class="action-menu-btn" onclick="window.cambiarEstadoFila('${t.id}')" title="Cambiar estado">⋮</button>
+          <button class="action-menu-btn" onclick="window.cambiarEstadoFila('${t.id}')" title="Cambiar estado">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+            </svg>
+          </button>
         </td>
       </tr>
     `;
@@ -379,7 +383,7 @@ function renderTable() {
 function showToast(msg) {
   const t = document.createElement('div');
   t.className = 'toast-msg';
-  t.innerHTML = `<span>✨</span><span>${escapeHtml(msg)}</span>`;
+  t.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>${escapeHtml(msg)}</span>`;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 4000);
 }
@@ -520,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('aiResultBox').style.display = 'block';
       document.getElementById('btnConfirmAi').style.display = 'inline-flex';
     } catch (err) {
-      alert("❌ " + err.message);
+      alert("Atención: " + err.message);
     }
   });
 
