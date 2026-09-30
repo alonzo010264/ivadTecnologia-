@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IVAD · Gastos con Tarjeta Corporativa (IA)</title>
+  <meta name="description" content="Control automatizado y extracción con IA de consumos con tarjetas corporativas de IVAD Home & Goods" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Header Superior -->
+  <header class="page-header">
+    <a href="/" class="brand-wrap">
+      <img src="/ivad-logo.png" alt="IVAD Home & Goods" />
+      <div class="brand-title">
+        <h1>Gastos con Tarjeta Corporativa</h1>
+        <span>Módulo de Conciliación con Inteligencia Artificial</span>
+      </div>
+    </a>
+    <div class="header-actions">
+      <a href="/" class="btn btn-outline btn-sm">
+        &larr; Volver al Portal
+      </a>
+      <button id="btnOpenInfoModal" class="btn btn-outline btn-sm">
+        📧 Conectar Correos
+      </button>
+      <button id="btnOpenManualModal" class="btn btn-outline btn-sm">
+        + Registro Manual
+      </button>
+      <button id="btnOpenAiModal" class="btn btn-accent btn-sm">
+        ✨ Analizar Correo con IA
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Banner Informativo de IA -->
+    <div class="ai-banner">
+      <div class="ai-banner-content">
+        <h2>
+          <span>🤖 Motor IA de Detección de Tarjetas</span>
+          <span class="ai-badge">Exclusivo Tarjetas</span>
+        </h2>
+        <p>
+          Este panel extrae automáticamente compras y consumos realizados con tarjetas corporativas (Banco Popular, Banreservas, BHD León, Scotiabank, etc.). 
+          <strong>Filtro inteligente activado:</strong> si el correo contiene transferencias o pagos en efectivo, la IA los descarta para no mezclar saldos.
+        </p>
+      </div>
+      <button id="btnSync" class="btn btn-outline" style="background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3);">
+        🔄 Sincronizar
+      </button>
+    </div>
+
+    <!-- Grid de Indicadores Clave (KPIs) -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <span>Gastos del Mes (DOP)</span>
+          <span class="kpi-icon">🇩🇴</span>
+        </div>
+        <div class="kpi-val" id="kpiTotalDOP">RD$ 0.00</div>
+        <div class="kpi-sub">Total acumulado en pesos</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <span>Gastos del Mes (USD)</span>
+          <span class="kpi-icon">💵</span>
+        </div>
+        <div class="kpi-val" id="kpiTotalUSD">$ 0.00</div>
+        <div class="kpi-sub">Suscripciones y compras internacionales</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <span>Transacciones</span>
+          <span class="kpi-icon">📊</span>
+        </div>
+        <div class="kpi-val" id="kpiTransacciones">0</div>
+        <div class="kpi-sub">Consumos con tarjeta este mes</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">
+          <span>Estado de Facturas</span>
+          <span class="kpi-icon">🧾</span>
+        </div>
+        <div class="kpi-val" style="font-size: 20px; color: var(--warning);" id="kpiPendientes">0 pendientes</div>
+        <div class="kpi-sub">Requieren comprobante fiscal</div>
+      </div>
+    </div>
+
+    <!-- Sección de Tarjetas Corporativas Virtuales -->
+    <div class="section-title">
+      <span>Tarjetas Corporativas en Uso</span>
+      <span style="font-size: 13px; font-weight: 500; color: var(--ink-soft);">Desglose por tarjeta asignada</span>
+    </div>
+    <div class="cards-slider" id="cardsSlider">
+      <!-- Se inyecta dinámicamente -->
+    </div>
+
+    <!-- Barra de Filtros y Búsqueda -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Filtrar por Banco</label>
+        <select id="filterBanco" class="form-control">
+          <option value="">Todos los Bancos</option>
+          <option value="Banco Popular Dominicano">Banco Popular</option>
+          <option value="Banreservas">Banreservas</option>
+          <option value="Banco BHD">Banco BHD</option>
+          <option value="Scotiabank">Scotiabank</option>
+          <option value="Qik Banco Digital">Qik Banco Digital</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Moneda</label>
+        <select id="filterMoneda" class="form-control">
+          <option value="">Todas (DOP / USD)</option>
+          <option value="DOP">Solo Pesos (RD$)</option>
+          <option value="USD">Solo Dólares (USD$)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Conciliación</label>
+        <select id="filterEstado" class="form-control">
+          <option value="">Todos los Estados</option>
+          <option value="Pendiente">Pendiente de Factura</option>
+          <option value="Factura Adjunta">Factura Adjunta</option>
+          <option value="Conciliado">Conciliado ✓</option>
+        </select>
+      </div>
+
+      <div class="filter-group" style="flex: 2; min-width: 220px;">
+        <label>Buscar Comercio, Autorización o Titular</label>
+        <input type="text" id="searchInput" class="form-control" placeholder="Ej: Texaco, Ochoa, Google, 4589..." />
+      </div>
+    </div>
+
+    <!-- Tabla Principal de Transacciones -->
+    <div class="table-card">
+      <div class="table-header-wrap">
+        <h3>Historial Detallado de Consumos con Tarjeta</h3>
+        <span id="tableRowCount" style="font-size: 13px; color: var(--ink-soft); font-weight: 500;">
+          Cargando movimientos...
+        </span>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Tarjeta / Banco</th>
+              <th>Establecimiento / Titular</th>
+              <th>Categoría</th>
+              <th>Autorización</th>
+              <th>Monto</th>
+              <th>Conciliación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center; padding: 40px; color: var(--ink-soft);">
+                Cargando datos desde Supabase...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ANALIZAR CORREO BANCARIO CON IA -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay" id="modalAi" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>✨ Analizar Correo Bancario con IA</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13.5px; color: var(--ink-soft); margin-bottom: 16px;">
+          Pega el texto de la notificación de consumo que te envía tu banco (Banco Popular, Banreservas, BHD, etc.). El sistema extraerá de forma inteligente el monto, comercio, tarjeta, hora y verificará que no sea efectivo.
+        </p>
+
+        <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('popular')">
+            Pegar Ejemplo Popular
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('reservas')">
+            Pegar Ejemplo Reservas
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('bhd')">
+            Pegar Ejemplo BHD
+          </button>
+        </div>
+
+        <textarea id="aiRawText" class="form-control" rows="7" placeholder="Pega aquí el texto completo del correo del banco...&#10;&#10;Ejemplo:&#10;Banco Popular le informa que ha realizado un consumo con su tarjeta de crédito terminada en 4589 por RD$ 4,500.00 en ESTACION TOTAL SANTIAGO el 30/09/2026. Aprobación: 772910." style="font-family: monospace; font-size: 13px;"></textarea>
+
+        <div style="margin-top: 14px; text-align: right;">
+          <button type="button" id="btnProcessAi" class="btn btn-primary">
+            🔍 Analizar y Extraer con IA
+          </button>
+        </div>
+
+        <!-- Caja de Resultados de la IA -->
+        <div id="aiResultBox" class="ai-preview-card" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--accent-border); padding-bottom: 8px;">
+            <strong style="color: var(--primary); font-size: 14px;">✅ Datos Extraídos Correctamente:</strong>
+            <span class="badge badge-success">Tarjeta Validada</span>
+          </div>
+
+          <div class="ai-preview-grid">
+            <div class="ai-preview-item">
+              <div class="label">Banco Detectado</div>
+              <div class="val" id="previewBanco">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Tarjeta Usada</div>
+              <div class="val" id="previewTarjeta">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Comercio / Proveedor</div>
+              <div class="val" id="previewComercio">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Monto Extraído</div>
+              <div class="val" id="previewMonto" style="font-size: 16px; color: var(--primary);">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Categoría Sugerida</div>
+              <div class="val" id="previewCategoria">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">No. Aprobación</div>
+              <div class="val" id="previewAut">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Titular Asignado</div>
+              <div class="val" id="previewTitular">—</div>
+            </div>
+            <div class="ai-preview-item">
+              <div class="label">Fecha y Hora</div>
+              <div class="val" id="previewFechaHora">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline btn-close-modal">Cancelar</button>
+        <button type="button" id="btnConfirmAi" class="btn btn-accent" style="display: none;">
+          💾 Confirmar y Guardar Gasto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: REGISTRO MANUAL -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay" id="modalManual" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>+ Registrar Gasto con Tarjeta</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="manualForm">
+        <div class="modal-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Banco Emisor</label>
+              <select id="manualBanco" class="form-control" required>
+                <option value="Banco Popular Dominicano">Banco Popular Dominicano</option>
+                <option value="Banreservas">Banreservas</option>
+                <option value="Banco BHD">Banco BHD</option>
+                <option value="Scotiabank">Scotiabank</option>
+                <option value="Qik Banco Digital">Qik Banco Digital</option>
+                <option value="Otro Banco">Otro Banco</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Últimos 4 Dígitos</label>
+              <input type="text" id="manualTarjeta" class="form-control" placeholder="Ej: 4589" maxlength="4" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Tipo de Tarjeta</label>
+              <select id="manualTipo" class="form-control">
+                <option value="Crédito">Crédito Empresarial</option>
+                <option value="Débito">Débito Empresarial</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Titular / Responsable</label>
+              <input type="text" id="manualTitular" class="form-control" placeholder="Ej: José Ramón Miranda" required />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Comercio / Establecimiento</label>
+            <input type="text" id="manualComercio" class="form-control" placeholder="Ej: Ferretería Ochoa, Adobe Creative, Texaco..." required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Monto de la Compra</label>
+              <input type="number" step="0.01" id="manualMonto" class="form-control" placeholder="0.00" required />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Moneda</label>
+              <select id="manualMoneda" class="form-control">
+                <option value="DOP">RD$ (Pesos)</option>
+                <option value="USD">USD$ (Dólares)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Categoría</label>
+              <select id="manualCategoria" class="form-control">
+                <option value="Combustible y Transporte">Combustible y Transporte</option>
+                <option value="Software y Suscripciones">Software y Suscripciones</option>
+                <option value="Mantenimiento y Reparaciones">Mantenimiento y Reparaciones</option>
+                <option value="Alimentos y Representación">Alimentos y Representación</option>
+                <option value="Viajes y Hospedaje">Viajes y Hospedaje</option>
+                <option value="Suministros y Compras">Suministros y Compras</option>
+                <option value="Servicios Generales">Servicios Generales</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Fecha</label>
+              <input type="date" id="manualFecha" class="form-control" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Hora (Opcional)</label>
+              <input type="time" id="manualHora" class="form-control" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">No. Autorización (Opcional)</label>
+              <input type="text" id="manualAut" class="form-control" placeholder="Ej: 884120" />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">NCF / Comprobante Fiscal (Opcional)</label>
+              <input type="text" id="manualNcf" class="form-control" placeholder="Ej: B0100029410" />
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Estado Inicial</label>
+              <select id="manualEstado" class="form-control">
+                <option value="Pendiente">Pendiente de Factura</option>
+                <option value="Factura Adjunta">Factura Adjunta</option>
+                <option value="Conciliado">Conciliado ✓</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Notas / Justificación</label>
+            <textarea id="manualNotas" class="form-control" rows="2" placeholder="Detalle adicional sobre el destino del gasto..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline btn-close-modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Consumo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: CONEXIÓN AUTOMÁTICA DE CORREOS -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay" id="modalInfo" hidden>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>📧 Automatización de Correos Bancarios</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" style="font-size: 14px; line-height: 1.6; color: var(--ink);">
+        <p style="margin-bottom: 14px;">
+          Para que los consumos con tarjeta se registren <strong>automáticamente sin intervención manual</strong>:
+        </p>
+
+        <div style="background: #f8fafc; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 15px;">1. Regla en Google Workspace / Correo</h4>
+          <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 8px;">
+            Crea un filtro en Gmail o Outlook de la cuenta que recibe las notificaciones del banco (ej: <code>tecnologia@ivadsrl.com</code> o <code>contabilidad@ivadsrl.com</code>):
+          </p>
+          <ul style="padding-left: 20px; font-size: 13px; color: var(--ink);">
+            <li><strong>De:</strong> <code>@bpd.com.do</code>, <code>@banreservas.com.do</code>, <code>@bhd.com.do</code></li>
+            <li><strong>Asunto:</strong> <em>"Notificación de Consumo"</em> o <em>"Transacción con Tarjeta"</em></li>
+            <li><strong>Acción:</strong> Reenviar automáticamente a tu buzón dedicado o copiar el contenido al botón de IA.</li>
+          </ul>
+        </div>
+
+        <div style="background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 8px; padding: 16px;">
+          <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 15px;">2. Botón de IA Inmediata (Modo Rápido)</h4>
+          <p style="font-size: 13px; color: var(--ink-soft);">
+            Puedes abrir el correo en tu teléfono o computadora, presionar <strong>Copiar</strong>, y dar click en el botón dorado <strong>"✨ Analizar Correo con IA"</strong> en este panel. En 1 segundo el gasto queda tabulado, sumado y categorizado.
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-close-modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+  <script>
+    // Ejemplos pre-cargados para probar al instante
+    function cargarEjemplo(banco) {
+      const textarea = document.getElementById('aiRawText');
+      if (banco === 'popular') {
+        textarea.value = `Banco Popular Dominicano\nEstimado cliente:\nLe informamos que ha realizado una transacción comercial aprobada con su Tarjeta de Crédito Empresarial terminada en 4589.\nComercio: ESTACION TOTAL SANTIAGO\nMonto: RD$ 4,750.00\nFecha: 30/09/2026 14:15\nNo. de Autorización: 982144\nTipo de transacción: Consumo POS. Gracias por preferirnos.`;
+      } else if (banco === 'reservas') {
+        textarea.value = `Banreservas Notificaciones\nEstimado(a) MYRIAM LAVAL,\nSe ha registrado un consumo exitoso con su Tarjeta de Crédito Visa terminada en 7214.\nEstablecimiento: GOOGLE *CLOUD SERVICES\nValor: US$ 125.50\nFecha y hora: 30/09/2026 11:30 AM\nCódigo de aprobación: 663189\nSi no reconoce este consumo, comuníquese de inmediato.`;
+      } else if (banco === 'bhd') {
+        textarea.value = `Banco BHD León - Alerta de Consumo\nHola JOSE RAMON MIRANDA,\nSe registró una compra aprobada con su Tarjeta Mastercard terminada en 3301.\nLugar: FERRETERIA OCHOA SANTIAGO\nMonto: RD$ 18,340.00\nFecha: 29/09/2026 16:45\nReferencia / Autorización: BHD-881204.\nPara más detalles visite Internet Banking.`;
+      }
+    }
+  </script>
+</body>
+</html>
