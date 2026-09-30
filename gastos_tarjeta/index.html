@@ -7,110 +7,149 @@
   <meta name="description" content="Control automatizado y extracción con IA de consumos con tarjetas corporativas de IVAD Home & Goods" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-  <!-- Header Superior -->
-  <header class="page-header">
-    <a href="/" class="brand-wrap">
-      <img src="/ivad-logo.png" alt="IVAD Home & Goods" />
-      <div class="brand-title">
-        <h1>Gastos con Tarjeta Corporativa</h1>
-        <span>Módulo de Conciliación con Inteligencia Artificial</span>
-      </div>
-    </a>
-    <div class="header-actions">
-      <a href="/" class="btn btn-outline btn-sm">
-        &larr; Volver al Portal
+  <!-- Floating Luxury Navbar -->
+  <div class="navbar-wrap">
+    <header class="navbar">
+      <a href="/" class="brand-section">
+        <img src="/ivad-logo.png" alt="IVAD Home & Goods" class="brand-logo" />
+        <div class="brand-divider"></div>
+        <div class="brand-info">
+          <h1>
+            Gastos Tarjeta
+            <span class="brand-badge">IA Core</span>
+          </h1>
+          <p>Conciliación Automatizada · IVAD Home &amp; Goods</p>
+        </div>
       </a>
-      <button id="btnOpenInfoModal" class="btn btn-outline btn-sm">
-        📧 Conectar Correos
-      </button>
-      <button id="btnOpenManualModal" class="btn btn-outline btn-sm">
-        + Registro Manual
-      </button>
-      <button id="btnOpenAiModal" class="btn btn-accent btn-sm">
-        ✨ Analizar Correo con IA
-      </button>
-    </div>
-  </header>
 
-  <main class="container">
+      <nav class="navbar-nav">
+        <a href="/" class="btn btn-outline btn-sm">
+          &larr; Portal Principal
+        </a>
+        <button id="btnOpenInfoModal" class="btn btn-outline btn-sm">
+          📧 Automatizar
+        </button>
+        <button id="btnOpenManualModal" class="btn btn-outline btn-sm">
+          + Registro
+        </button>
+        <button id="btnOpenAiModal" class="btn btn-ai btn-sm">
+          ✨ Analizar Correo con IA
+        </button>
+      </nav>
+    </header>
+  </div>
 
-    <!-- Banner Informativo de IA -->
-    <div class="ai-banner">
-      <div class="ai-banner-content">
-        <h2>
-          <span>🤖 Motor IA de Detección de Tarjetas</span>
-          <span class="ai-badge">Exclusivo Tarjetas</span>
-        </h2>
-        <p>
-          Este panel extrae automáticamente compras y consumos realizados con tarjetas corporativas (Banco Popular, Banreservas, BHD León, Scotiabank, etc.). 
-          <strong>Filtro inteligente activado:</strong> si el correo contiene transferencias o pagos en efectivo, la IA los descarta para no mezclar saldos.
-        </p>
-      </div>
-      <button id="btnSync" class="btn btn-outline" style="background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.3);">
-        🔄 Sincronizar
-      </button>
-    </div>
+  <main class="main-container">
 
-    <!-- Grid de Indicadores Clave (KPIs) -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">
-          <span>Gastos del Mes (DOP)</span>
-          <span class="kpi-icon">🇩🇴</span>
+    <!-- Hero / AI Callout Banner -->
+    <section class="ai-hero-card">
+      <div class="ai-hero-grid">
+        <div class="ai-hero-content">
+          <div class="ai-hero-tag">
+            <span>✨</span> Conciliación Inteligente en Segundos
+          </div>
+          <h2>Extracción Automática de Consumos Bancarios</h2>
+          <p>
+            Copia el correo que recibes de tu banco al realizar una compra con tarjeta corporativa. Nuestro motor con IA detecta el monto, banco, comercio, titular y rechaza automáticamente transferencias o pagos en efectivo para mantener tus cuentas blindadas.
+          </p>
+          <div class="ai-hero-pills">
+            <div class="hero-pill"><span>✓</span> Filtro Anti-Efectivo</div>
+            <div class="hero-pill"><span>✓</span> Bancos de RD (Popular, Banreservas, BHD)</div>
+            <div class="hero-pill"><span>✓</span> Detección de Tarjeta y NCF</div>
+          </div>
         </div>
-        <div class="kpi-val" id="kpiTotalDOP">RD$ 0.00</div>
-        <div class="kpi-sub">Total acumulado en pesos</div>
-      </div>
 
-      <div class="kpi-card">
-        <div class="kpi-label">
-          <span>Gastos del Mes (USD)</span>
-          <span class="kpi-icon">💵</span>
+        <div class="ai-interactive-box">
+          <h4>Procesar Notificación Bancaria</h4>
+          <p>Analiza el correo con IA o sincroniza los consumos actuales en tiempo real.</p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button id="btnSync" class="btn btn-outline btn-sm">
+              🔄 Sincronizar
+            </button>
+            <button onclick="document.getElementById('btnOpenAiModal').click()" class="btn btn-ai btn-sm">
+              ✨ Pegar Correo
+            </button>
+          </div>
         </div>
-        <div class="kpi-val" id="kpiTotalUSD">$ 0.00</div>
-        <div class="kpi-sub">Suscripciones y compras internacionales</div>
       </div>
+    </section>
 
-      <div class="kpi-card">
-        <div class="kpi-label">
-          <span>Transacciones</span>
-          <span class="kpi-icon">📊</span>
+    <!-- Bento Grid de KPIs -->
+    <section class="kpi-row">
+      <div class="stat-card stat-card-gold">
+        <div class="stat-header">
+          <span class="stat-title">Consumo Mes (DOP)</span>
+          <div class="stat-icon-wrap" style="background: #fdf6e2; color: var(--gold);">🇩🇴</div>
         </div>
-        <div class="kpi-val" id="kpiTransacciones">0</div>
-        <div class="kpi-sub">Consumos con tarjeta este mes</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-label">
-          <span>Estado de Facturas</span>
-          <span class="kpi-icon">🧾</span>
+        <div class="stat-number" id="kpiTotalDOP">RD$ 0.00</div>
+        <div class="stat-footer">
+          <span class="trend-badge trend-up">Pesos</span>
+          <span>Acumulado del mes corriente</span>
         </div>
-        <div class="kpi-val" style="font-size: 20px; color: var(--warning);" id="kpiPendientes">0 pendientes</div>
-        <div class="kpi-sub">Requieren comprobante fiscal</div>
       </div>
-    </div>
 
-    <!-- Sección de Tarjetas Corporativas Virtuales -->
-    <div class="section-title">
-      <span>Tarjetas Corporativas en Uso</span>
-      <span style="font-size: 13px; font-weight: 500; color: var(--ink-soft);">Desglose por tarjeta asignada</span>
-    </div>
-    <div class="cards-slider" id="cardsSlider">
-      <!-- Se inyecta dinámicamente -->
-    </div>
+      <div class="stat-card stat-card-blue">
+        <div class="stat-header">
+          <span class="stat-title">Consumo Mes (USD)</span>
+          <div class="stat-icon-wrap" style="background: #eff6ff; color: #2563eb;">💵</div>
+        </div>
+        <div class="stat-number" id="kpiTotalUSD">$ 0.00</div>
+        <div class="stat-footer">
+          <span class="trend-badge" style="background: #eff6ff; color: #2563eb;">Dólares</span>
+          <span>Suscripciones y servicios web</span>
+        </div>
+      </div>
 
-    <!-- Barra de Filtros y Búsqueda -->
-    <div class="filter-bar">
-      <div class="filter-group">
-        <label>Filtrar por Banco</label>
-        <select id="filterBanco" class="form-control">
+      <div class="stat-card stat-card-emerald">
+        <div class="stat-header">
+          <span class="stat-title">Transacciones</span>
+          <div class="stat-icon-wrap" style="background: #ecfdf5; color: #10b981;">📊</div>
+        </div>
+        <div class="stat-number" id="kpiTransacciones">0</div>
+        <div class="stat-footer">
+          <span class="trend-badge trend-up">Tarjetas</span>
+          <span>Consumos aprobados este mes</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-amber">
+        <div class="stat-header">
+          <span class="stat-title">Estado de Facturas</span>
+          <div class="stat-icon-wrap" style="background: #fffbeb; color: #f59e0b;">🧾</div>
+        </div>
+        <div class="stat-number" style="font-size: 22px; color: #d97706;" id="kpiPendientes">0 pendientes</div>
+        <div class="stat-footer">
+          <span class="trend-badge" style="background: #fffbeb; color: #d97706;">Comprobantes</span>
+          <span>Pendientes de NCF o soporte</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección de Tarjetas Físicas/Virtuales en Uso -->
+    <section style="margin-bottom: 32px;">
+      <div class="section-header">
+        <div>
+          <h3>Tarjetas Corporativas en Uso</h3>
+          <p>Consumos desglosados por tarjeta asignada y banco emisor</p>
+        </div>
+      </div>
+      <div class="cards-grid" id="cardsSlider">
+        <!-- Renderizado dinámico desde script.js -->
+      </div>
+    </section>
+
+    <!-- Filtros de Búsqueda -->
+    <section class="filter-container">
+      <div class="filter-item">
+        <label>Banco Emisor</label>
+        <select id="filterBanco" class="select-input">
           <option value="">Todos los Bancos</option>
-          <option value="Banco Popular Dominicano">Banco Popular</option>
+          <option value="Banco Popular Dominicano">Banco Popular Dominicano</option>
           <option value="Banreservas">Banreservas</option>
           <option value="Banco BHD">Banco BHD</option>
           <option value="Scotiabank">Scotiabank</option>
@@ -118,18 +157,18 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-item">
         <label>Moneda</label>
-        <select id="filterMoneda" class="form-control">
-          <option value="">Todas (DOP / USD)</option>
+        <select id="filterMoneda" class="select-input">
+          <option value="">Todas las Monedas</option>
           <option value="DOP">Solo Pesos (RD$)</option>
           <option value="USD">Solo Dólares (USD$)</option>
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-item">
         <label>Conciliación</label>
-        <select id="filterEstado" class="form-control">
+        <select id="filterEstado" class="select-input">
           <option value="">Todos los Estados</option>
           <option value="Pendiente">Pendiente de Factura</option>
           <option value="Factura Adjunta">Factura Adjunta</option>
@@ -137,29 +176,29 @@
         </select>
       </div>
 
-      <div class="filter-group" style="flex: 2; min-width: 220px;">
-        <label>Buscar Comercio, Autorización o Titular</label>
-        <input type="text" id="searchInput" class="form-control" placeholder="Ej: Texaco, Ochoa, Google, 4589..." />
+      <div class="filter-item" style="flex: 2; min-width: 250px;">
+        <label>Buscar Comercio, Titular o NCF</label>
+        <input type="text" id="searchInput" class="text-input" placeholder="Ej: Texaco, Ochoa, Google, 4589, Miranda..." />
       </div>
-    </div>
+    </section>
 
     <!-- Tabla Principal de Transacciones -->
-    <div class="table-card">
-      <div class="table-header-wrap">
-        <h3>Historial Detallado de Consumos con Tarjeta</h3>
-        <span id="tableRowCount" style="font-size: 13px; color: var(--ink-soft); font-weight: 500;">
-          Cargando movimientos...
+    <section class="table-wrapper">
+      <div class="table-topbar">
+        <h4>Historial de Consumos con Tarjeta</h4>
+        <span id="tableRowCount" style="font-size: 13px; font-weight: 600; color: var(--text-muted);">
+          Cargando registros...
         </span>
       </div>
+
       <div style="overflow-x: auto;">
-        <table class="data-table">
+        <table class="custom-table">
           <thead>
             <tr>
               <th>Fecha y Hora</th>
               <th>Tarjeta / Banco</th>
-              <th>Establecimiento / Titular</th>
+              <th>Comercio / Titular</th>
               <th>Categoría</th>
-              <th>Autorización</th>
               <th>Monto</th>
               <th>Conciliación</th>
               <th>Acciones</th>
@@ -167,98 +206,99 @@
           </thead>
           <tbody id="transactionsTableBody">
             <tr>
-              <td colspan="8" style="text-align: center; padding: 40px; color: var(--ink-soft);">
+              <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
                 Cargando datos desde Supabase...
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
 
   </main>
 
   <!-- ========================================================================= -->
   <!-- MODAL: ANALIZAR CORREO BANCARIO CON IA -->
   <!-- ========================================================================= -->
-  <div class="modal-overlay" id="modalAi" hidden>
-    <div class="modal-dialog">
-      <div class="modal-header">
+  <div class="modal-backdrop" id="modalAi" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
         <h3>✨ Analizar Correo Bancario con IA</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close-x">&times;</button>
       </div>
-      <div class="modal-body">
-        <p style="font-size: 13.5px; color: var(--ink-soft); margin-bottom: 16px;">
-          Pega el texto de la notificación de consumo que te envía tu banco (Banco Popular, Banreservas, BHD, etc.). El sistema extraerá de forma inteligente el monto, comercio, tarjeta, hora y verificará que no sea efectivo.
+      <div class="modal-content">
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
+          Pega el texto de la notificación de consumo que te envía tu banco. El motor inteligente extraerá el monto, comercio, tarjeta, hora y verificará que sea exclusivamente un consumo con tarjeta corporativa.
         </p>
 
-        <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+        <!-- Botones de ejemplo rápido -->
+        <div style="margin-bottom: 14px; display: flex; gap: 8px; flex-wrap: wrap;">
           <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('popular')">
-            Pegar Ejemplo Popular
+            Ejemplo Popular
           </button>
           <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('reservas')">
-            Pegar Ejemplo Reservas
+            Ejemplo Reservas
           </button>
           <button type="button" class="btn btn-outline btn-sm" onclick="cargarEjemplo('bhd')">
-            Pegar Ejemplo BHD
+            Ejemplo BHD
           </button>
         </div>
 
-        <textarea id="aiRawText" class="form-control" rows="7" placeholder="Pega aquí el texto completo del correo del banco...&#10;&#10;Ejemplo:&#10;Banco Popular le informa que ha realizado un consumo con su tarjeta de crédito terminada en 4589 por RD$ 4,500.00 en ESTACION TOTAL SANTIAGO el 30/09/2026. Aprobación: 772910." style="font-family: monospace; font-size: 13px;"></textarea>
+        <textarea id="aiRawText" class="form-control" rows="6" placeholder="Pega aquí el texto completo del correo del banco...&#10;&#10;Ejemplo:&#10;Banco Popular le informa que ha realizado un consumo con su tarjeta de crédito terminada en 4589 por RD$ 4,500.00 en ESTACION TOTAL SANTIAGO el 30/09/2026. Aprobación: 772910." style="font-family: monospace; font-size: 12.5px; line-height: 1.5;"></textarea>
 
         <div style="margin-top: 14px; text-align: right;">
-          <button type="button" id="btnProcessAi" class="btn btn-primary">
+          <button type="button" id="btnProcessAi" class="btn btn-ai">
             🔍 Analizar y Extraer con IA
           </button>
         </div>
 
-        <!-- Caja de Resultados de la IA -->
-        <div id="aiResultBox" class="ai-preview-card" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--accent-border); padding-bottom: 8px;">
-            <strong style="color: var(--primary); font-size: 14px;">✅ Datos Extraídos Correctamente:</strong>
-            <span class="badge badge-success">Tarjeta Validada</span>
+        <!-- Vista previa de extracción con IA -->
+        <div id="aiResultBox" class="ai-match-card" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ebd9b0; padding-bottom: 10px;">
+            <strong style="color: #92400e; font-size: 14px;">✅ Consumo con Tarjeta Identificado:</strong>
+            <span class="badge-pill badge-conciliado">Válido</span>
           </div>
 
-          <div class="ai-preview-grid">
-            <div class="ai-preview-item">
-              <div class="label">Banco Detectado</div>
-              <div class="val" id="previewBanco">—</div>
+          <div class="ai-match-grid">
+            <div class="match-item">
+              <div class="m-label">Banco Detectado</div>
+              <div class="m-val" id="previewBanco">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Tarjeta Usada</div>
-              <div class="val" id="previewTarjeta">—</div>
+            <div class="match-item">
+              <div class="m-label">Tarjeta Usada</div>
+              <div class="m-val" id="previewTarjeta">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Comercio / Proveedor</div>
-              <div class="val" id="previewComercio">—</div>
+            <div class="match-item">
+              <div class="m-label">Comercio / Proveedor</div>
+              <div class="m-val" id="previewComercio">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Monto Extraído</div>
-              <div class="val" id="previewMonto" style="font-size: 16px; color: var(--primary);">—</div>
+            <div class="match-item">
+              <div class="m-label">Monto Extraído</div>
+              <div class="m-val" id="previewMonto" style="font-size: 16px; color: var(--navy-dark); font-family: 'Space Grotesk', sans-serif;">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Categoría Sugerida</div>
-              <div class="val" id="previewCategoria">—</div>
+            <div class="match-item">
+              <div class="m-label">Categoría Sugerida</div>
+              <div class="m-val" id="previewCategoria">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">No. Aprobación</div>
-              <div class="val" id="previewAut">—</div>
+            <div class="match-item">
+              <div class="m-label">No. Aprobación</div>
+              <div class="m-val" id="previewAut">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Titular Asignado</div>
-              <div class="val" id="previewTitular">—</div>
+            <div class="match-item">
+              <div class="m-label">Titular Asignado</div>
+              <div class="m-val" id="previewTitular">—</div>
             </div>
-            <div class="ai-preview-item">
-              <div class="label">Fecha y Hora</div>
-              <div class="val" id="previewFechaHora">—</div>
+            <div class="match-item">
+              <div class="m-label">Fecha y Hora</div>
+              <div class="m-val" id="previewFechaHora">—</div>
             </div>
           </div>
         </div>
 
       </div>
-      <div class="modal-footer">
+      <div class="modal-foot">
         <button type="button" class="btn btn-outline btn-close-modal">Cancelar</button>
-        <button type="button" id="btnConfirmAi" class="btn btn-accent" style="display: none;">
+        <button type="button" id="btnConfirmAi" class="btn btn-ai" style="display: none;">
           💾 Confirmar y Guardar Gasto
         </button>
       </div>
@@ -268,18 +308,18 @@
   <!-- ========================================================================= -->
   <!-- MODAL: REGISTRO MANUAL -->
   <!-- ========================================================================= -->
-  <div class="modal-overlay" id="modalManual" hidden>
-    <div class="modal-dialog">
-      <div class="modal-header">
+  <div class="modal-backdrop" id="modalManual" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
         <h3>+ Registrar Gasto con Tarjeta</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close-x">&times;</button>
       </div>
       <form id="manualForm">
-        <div class="modal-body">
+        <div class="modal-content">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Banco Emisor</label>
-              <select id="manualBanco" class="form-control" required>
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Banco Emisor</label>
+              <select id="manualBanco" class="select-input" required>
                 <option value="Banco Popular Dominicano">Banco Popular Dominicano</option>
                 <option value="Banreservas">Banreservas</option>
                 <option value="Banco BHD">Banco BHD</option>
@@ -289,38 +329,38 @@
               </select>
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Últimos 4 Dígitos</label>
-              <input type="text" id="manualTarjeta" class="form-control" placeholder="Ej: 4589" maxlength="4" required />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Últimos 4 Dígitos</label>
+              <input type="text" id="manualTarjeta" class="text-input" placeholder="Ej: 4589" maxlength="4" required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Tipo de Tarjeta</label>
-              <select id="manualTipo" class="form-control">
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Tipo de Tarjeta</label>
+              <select id="manualTipo" class="select-input">
                 <option value="Crédito">Crédito Empresarial</option>
                 <option value="Débito">Débito Empresarial</option>
               </select>
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Titular / Responsable</label>
-              <input type="text" id="manualTitular" class="form-control" placeholder="Ej: José Ramón Miranda" required />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Titular / Responsable</label>
+              <input type="text" id="manualTitular" class="text-input" placeholder="Ej: José Ramón Miranda" required />
             </div>
           </div>
 
           <div style="margin-bottom: 14px;">
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Comercio / Establecimiento</label>
-            <input type="text" id="manualComercio" class="form-control" placeholder="Ej: Ferretería Ochoa, Adobe Creative, Texaco..." required />
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Comercio / Establecimiento</label>
+            <input type="text" id="manualComercio" class="text-input" placeholder="Ej: Ferretería Ochoa, Adobe Creative, Texaco..." required />
           </div>
 
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Monto de la Compra</label>
-              <input type="number" step="0.01" id="manualMonto" class="form-control" placeholder="0.00" required />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Monto de la Compra</label>
+              <input type="number" step="0.01" id="manualMonto" class="text-input" placeholder="0.00" required />
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Moneda</label>
-              <select id="manualMoneda" class="form-control">
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Moneda</label>
+              <select id="manualMoneda" class="select-input">
                 <option value="DOP">RD$ (Pesos)</option>
                 <option value="USD">USD$ (Dólares)</option>
               </select>
@@ -329,8 +369,8 @@
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Categoría</label>
-              <select id="manualCategoria" class="form-control">
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Categoría</label>
+              <select id="manualCategoria" class="select-input">
                 <option value="Combustible y Transporte">Combustible y Transporte</option>
                 <option value="Software y Suscripciones">Software y Suscripciones</option>
                 <option value="Mantenimiento y Reparaciones">Mantenimiento y Reparaciones</option>
@@ -341,30 +381,30 @@
               </select>
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Fecha</label>
-              <input type="date" id="manualFecha" class="form-control" required />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Fecha</label>
+              <input type="date" id="manualFecha" class="text-input" required />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Hora (Opcional)</label>
-              <input type="time" id="manualHora" class="form-control" />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Hora (Opcional)</label>
+              <input type="time" id="manualHora" class="text-input" />
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">No. Autorización (Opcional)</label>
-              <input type="text" id="manualAut" class="form-control" placeholder="Ej: 884120" />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">No. Autorización (Opcional)</label>
+              <input type="text" id="manualAut" class="text-input" placeholder="Ej: 884120" />
             </div>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">NCF / Comprobante Fiscal (Opcional)</label>
-              <input type="text" id="manualNcf" class="form-control" placeholder="Ej: B0100029410" />
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">NCF / Comprobante Fiscal (Opcional)</label>
+              <input type="text" id="manualNcf" class="text-input" placeholder="Ej: B0100029410" />
             </div>
             <div>
-              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Estado Inicial</label>
-              <select id="manualEstado" class="form-control">
+              <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Estado Inicial</label>
+              <select id="manualEstado" class="select-input">
                 <option value="Pendiente">Pendiente de Factura</option>
                 <option value="Factura Adjunta">Factura Adjunta</option>
                 <option value="Conciliado">Conciliado ✓</option>
@@ -373,13 +413,13 @@
           </div>
 
           <div>
-            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--ink-soft); display: block; margin-bottom: 4px;">Notas / Justificación</label>
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px;">Notas / Justificación</label>
             <textarea id="manualNotas" class="form-control" rows="2" placeholder="Detalle adicional sobre el destino del gasto..."></textarea>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-foot">
           <button type="button" class="btn btn-outline btn-close-modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Consumo</button>
+          <button type="submit" class="btn btn-dark">Guardar Consumo</button>
         </div>
       </form>
     </div>
@@ -388,38 +428,38 @@
   <!-- ========================================================================= -->
   <!-- MODAL: CONEXIÓN AUTOMÁTICA DE CORREOS -->
   <!-- ========================================================================= -->
-  <div class="modal-overlay" id="modalInfo" hidden>
-    <div class="modal-dialog">
-      <div class="modal-header">
+  <div class="modal-backdrop" id="modalInfo" hidden>
+    <div class="modal-box">
+      <div class="modal-head">
         <h3>📧 Automatización de Correos Bancarios</h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close-x">&times;</button>
       </div>
-      <div class="modal-body" style="font-size: 14px; line-height: 1.6; color: var(--ink);">
-        <p style="margin-bottom: 14px;">
-          Para que los consumos con tarjeta se registren <strong>automáticamente sin intervención manual</strong>:
+      <div class="modal-content" style="font-size: 14px; line-height: 1.6; color: var(--text-main);">
+        <p style="margin-bottom: 16px;">
+          Para que las compras con tarjeta corporativa se registren <strong>automáticamente sin intervención manual</strong>:
         </p>
 
-        <div style="background: #f8fafc; border: 1px solid var(--rule); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 15px;">1. Regla en Google Workspace / Correo</h4>
-          <p style="font-size: 13px; color: var(--ink-soft); margin-bottom: 8px;">
-            Crea un filtro en Gmail o Outlook de la cuenta que recibe las notificaciones del banco (ej: <code>tecnologia@ivadsrl.com</code> o <code>contabilidad@ivadsrl.com</code>):
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <h4 style="color: var(--navy-dark); margin-bottom: 8px; font-size: 15px;">1. Regla en Google Workspace / Buzón</h4>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+            Crea una regla de reenvío automático en el correo corporativo (ej: <code>tecnologia@ivadsrl.com</code>):
           </p>
-          <ul style="padding-left: 20px; font-size: 13px; color: var(--ink);">
-            <li><strong>De:</strong> <code>@bpd.com.do</code>, <code>@banreservas.com.do</code>, <code>@bhd.com.do</code></li>
-            <li><strong>Asunto:</strong> <em>"Notificación de Consumo"</em> o <em>"Transacción con Tarjeta"</em></li>
-            <li><strong>Acción:</strong> Reenviar automáticamente a tu buzón dedicado o copiar el contenido al botón de IA.</li>
+          <ul style="padding-left: 20px; font-size: 13px; color: var(--text-main); line-height: 1.8;">
+            <li><strong>Emisores bancarios:</strong> <code>@bpd.com.do</code>, <code>@banreservas.com.do</code>, <code>@bhd.com.do</code></li>
+            <li><strong>Filtro de Asunto:</strong> <em>"Notificación de Consumo"</em> o <em>"Transacción con Tarjeta"</em></li>
+            <li><strong>Acción:</strong> Reenviar automáticamente a la bandeja de conciliación.</li>
           </ul>
         </div>
 
-        <div style="background: var(--accent-soft); border: 1px solid var(--accent-border); border-radius: 8px; padding: 16px;">
-          <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 15px;">2. Botón de IA Inmediata (Modo Rápido)</h4>
-          <p style="font-size: 13px; color: var(--ink-soft);">
-            Puedes abrir el correo en tu teléfono o computadora, presionar <strong>Copiar</strong>, y dar click en el botón dorado <strong>"✨ Analizar Correo con IA"</strong> en este panel. En 1 segundo el gasto queda tabulado, sumado y categorizado.
+        <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: var(--radius-md); padding: 18px;">
+          <h4 style="color: #854d0e; margin-bottom: 8px; font-size: 15px;">2. Botón de IA Inmediata (Modo Express)</h4>
+          <p style="font-size: 13px; color: #713f12; line-height: 1.6;">
+            En tu celular o laptop, cuando recibas el correo del banco, solo selecciona y copia el texto, y haz clic en <strong>"✨ Analizar Correo con IA"</strong> en este panel. En 1 segundo el gasto queda sumado, catalogado y vinculado a la tarjeta correspondiente.
           </p>
         </div>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-close-modal">Entendido</button>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-dark btn-close-modal">Entendido</button>
       </div>
     </div>
   </div>

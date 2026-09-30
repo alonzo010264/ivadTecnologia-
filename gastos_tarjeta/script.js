@@ -16,13 +16,10 @@ try {
 
 const STORAGE_KEY = 'ivad_gastos_tarjeta_cache';
 
-// Estado global de la aplicación
 let state = {
   transactions: [],
   filters: {
     banco: '',
-    tarjeta: '',
-    mes: '',
     moneda: '',
     estado: '',
     search: ''
@@ -30,7 +27,7 @@ let state = {
   detectedAiTransaction: null
 };
 
-// Tarjetas registradas conocidas de la empresa
+// Tarjetas registradas conocidas
 const CONOCIDOS = {
   '4589': { titular: 'José Ramón Miranda', banco: 'Banco Popular Dominicano', tipo: 'Crédito' },
   '7214': { titular: 'Myriam Laval', banco: 'Banreservas', tipo: 'Crédito' },
@@ -38,7 +35,19 @@ const CONOCIDOS = {
   '9012': { titular: 'Jeannette A. Mejia', banco: 'Banco Popular Dominicano', tipo: 'Débito' }
 };
 
-// Formateadores
+// Íconos según categoría / comercio
+function getMerchantIcon(cat, merchant) {
+  const m = (merchant || '').toLowerCase();
+  const c = (cat || '').toLowerCase();
+  if (c.includes('combustible') || m.includes('texaco') || m.includes('total') || m.includes('shell') || m.includes('gasolina')) return '⛽';
+  if (c.includes('software') || m.includes('google') || m.includes('microsoft') || m.includes('adobe') || m.includes('aws') || m.includes('cloud')) return '💻';
+  if (c.includes('alimentos') || m.includes('restaurante') || m.includes('cafe') || m.includes('burger') || m.includes('pedidosya')) return '🍽️';
+  if (c.includes('mantenimiento') || m.includes('ferreteria') || m.includes('ochoa') || m.includes('bellon') || m.includes('ikea')) return '🔨';
+  if (c.includes('viajes') || m.includes('hotel') || m.includes('vuelo') || m.includes('airbnb') || m.includes('uber')) return '✈️';
+  if (c.includes('suministros') || m.includes('supermercado') || m.includes('nacional') || m.includes('bravo') || m.includes('sirena')) return '🛒';
+  return '🏢';
+}
+
 const fmtDOP = n => new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP', minimumFractionDigits: 2 }).format(n || 0);
 const fmtUSD = n => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n || 0);
 const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -53,7 +62,7 @@ function parseBankEmailAI(rawText) {
 
   const text = rawText.toLowerCase();
 
-  // 1. FILTRO ESTRICTO: ¿Es realmente un consumo con tarjeta?
+  // Filtro Estricto: solo tarjetas
   const isCard = text.includes('tarjeta') || text.includes('card') || text.includes('tdc') || 
                  text.includes('tdd') || text.includes('visa') || text.includes('mastercard') || 
                  text.includes('pos') || text.includes('consumo') || text.includes('aprobada') ||
@@ -65,10 +74,10 @@ function parseBankEmailAI(rawText) {
                            !text.includes('tarjeta');
 
   if (isCashOrTransfer || !isCard) {
-    throw new Error("Transacción rechazada: El correo no corresponde a un consumo con tarjeta corporativa (parece ser una transferencia, retiro o efectivo). Este módulo registra exclusivamente pagos con tarjeta.");
+    throw new Error("Transacción rechazada: El correo no corresponde a un consumo con tarjeta corporativa (parece ser una transferencia, retiro o efectivo). Este módulo registra exclusivamente compras con tarjeta.");
   }
 
-  // 2. DETECCIÓN DE BANCO
+  // Detección de Banco
   let banco = 'Banco Popular Dominicano';
   if (text.includes('reservas') || text.includes('banreservas')) {
     banco = 'Banreservas';
@@ -84,7 +93,7 @@ function parseBankEmailAI(rawText) {
     banco = 'Qik Banco Digital';
   }
 
-  // 3. DETECCIÓN DE ÚLTIMOS 4 DÍGITOS DE TARJETA
+  // Detección de Tarjeta
   let tarjeta = '0000';
   const tarjetaMatch = rawText.match(/terminada en\s*[:#*]?\s*(\d{4})/i) ||
                        rawText.match(/tarjeta\s*[:*#]?\s*[*xX\s]{2,12}(\d{4})/i) ||
@@ -95,7 +104,7 @@ function parseBankEmailAI(rawText) {
     tarjeta = tarjetaMatch[1];
   }
 
-  // 4. DETECCIÓN DE MONEDA Y MONTO
+  // Detección de Moneda y Monto
   let moneda = 'DOP';
   let monto = 0;
 
@@ -113,7 +122,7 @@ function parseBankEmailAI(rawText) {
     monto = parseFloat(cleanMonto) || 0;
   }
 
-  // 5. DETECCIÓN DE COMERCIO / ESTABLECIMIENTO
+  // Detección de Comercio
   let comercio = 'Comercio Corporativo';
   const comercioMatch = rawText.match(/en[:\s]+([^\n\r,.;]+)/i) ||
                         rawText.match(/comercio[:\s]+([^\n\r,.;]+)/i) ||
@@ -125,7 +134,7 @@ function parseBankEmailAI(rawText) {
     comercio = comercioMatch[1].trim().replace(/^[:\-\s]+/, '').slice(0, 50);
   }
 
-  // 6. DETECCIÓN DE AUTORIZACIÓN / APROBACIÓN
+  // Detección de Autorización
   let autorizacion = 'AUT-' + Math.floor(100000 + Math.random() * 900000);
   const autMatch = rawText.match(/autorizaci[oó]n[:\s]+([A-Za-z0-9]+)/i) ||
                    rawText.match(/aprobaci[oó]n[:\s]+([A-Za-z0-9]+)/i) ||
@@ -135,7 +144,7 @@ function parseBankEmailAI(rawText) {
     autorizacion = autMatch[1].trim();
   }
 
-  // 7. FECHA Y HORA
+  // Fecha y Hora
   let fecha = new Date().toISOString().split('T')[0];
   let hora = new Date().toTimeString().slice(0, 5);
 
@@ -154,7 +163,7 @@ function parseBankEmailAI(rawText) {
     hora = `${String(hh).padStart(2, '0')}:${mm}`;
   }
 
-  // 8. CATEGORIZACIÓN INTELIGENTE
+  // Categoría
   const cLower = comercio.toLowerCase();
   let categoria = 'Servicios Generales';
   if (cLower.match(/texaco|shell|total|isla|gasolina|combustible|petro|esso|sunix/)) {
@@ -171,7 +180,7 @@ function parseBankEmailAI(rawText) {
     categoria = 'Suministros y Compras';
   }
 
-  // 9. TITULAR ASIGNADO
+  // Titular
   let titular = 'Dirección / Colaborador IVAD';
   if (CONOCIDOS[tarjeta]) {
     titular = CONOCIDOS[tarjeta].titular;
@@ -245,10 +254,8 @@ function render() {
 function getFilteredTransactions() {
   return state.transactions.filter(t => {
     if (state.filters.banco && t.banco !== state.filters.banco) return false;
-    if (state.filters.tarjeta && t.tarjeta_ultimos4 !== state.filters.tarjeta) return false;
     if (state.filters.moneda && t.moneda !== state.filters.moneda) return false;
     if (state.filters.estado && t.estado_conciliacion !== state.filters.estado) return false;
-    if (state.filters.mes && !t.fecha.startsWith(state.filters.mes)) return false;
 
     if (state.filters.search) {
       const q = state.filters.search.toLowerCase();
@@ -296,14 +303,13 @@ function renderKPIs() {
   if (elDOP) elDOP.textContent = fmtDOP(totalDOP);
   if (elUSD) elUSD.textContent = fmtUSD(totalUSD);
   if (elCount) elCount.textContent = monthTransactions.length;
-  if (elPendientes) elPendientes.textContent = `${pendientes} pendientes`;
+  if (elPendientes) elPendientes.textContent = `${pendientes} facturas`;
 }
 
 function renderVirtualCards() {
   const wrap = document.getElementById('cardsSlider');
   if (!wrap) return;
 
-  // Agrupar por últimos 4 dígitos
   const cardMap = {};
   state.transactions.forEach(t => {
     const digits = t.tarjeta_ultimos4 || '0000';
@@ -327,18 +333,19 @@ function renderVirtualCards() {
   const cardsList = Object.values(cardMap);
   if (cardsList.length === 0) {
     wrap.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: var(--ink-soft); background: white; border-radius: 12px; border: 1px dashed var(--rule);">
-        No hay tarjetas registradas aún. Procesa un correo de consumo para ver la tarjeta aquí.
+      <div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--text-muted); background: white; border-radius: 16px; border: 1px dashed var(--border);">
+        No hay tarjetas con consumos registrados en este período.
       </div>
     `;
     return;
   }
 
   wrap.innerHTML = cardsList.map(c => {
-    let bankClass = 'card-popular';
+    let metalClass = 'metal-popular';
     const bLower = c.banco.toLowerCase();
-    if (bLower.includes('reservas')) bankClass = 'card-reservas';
-    else if (bLower.includes('bhd')) bankClass = 'card-bhd';
+    if (bLower.includes('reservas')) metalClass = 'metal-reservas';
+    else if (bLower.includes('bhd')) metalClass = 'metal-bhd';
+    else if (bLower.includes('scotia')) metalClass = 'metal-scotia';
 
     let spendText = fmtDOP(c.totalDOP);
     if (c.totalUSD > 0) {
@@ -346,20 +353,32 @@ function renderVirtualCards() {
     }
 
     return `
-      <div class="virtual-card ${bankClass}">
-        <div class="vcard-header">
-          <div class="vcard-chip"></div>
-          <div class="vcard-bank">${escapeHtml(c.banco)}</div>
-        </div>
-        <div class="vcard-num">•••• •••• •••• ${c.tarjeta}</div>
-        <div class="vcard-footer">
-          <div>
-            <div class="vcard-holder">${escapeHtml(c.titular)}</div>
-            <div style="font-size:10px; color:#94a3b8; text-transform:uppercase;">Tarjeta de ${c.tipo} (${c.count} ops)</div>
+      <div class="metal-card ${metalClass}">
+        <div class="card-top">
+          <div class="card-bank-name">
+            <span>🏛️</span>
+            <span>${escapeHtml(c.banco)}</span>
           </div>
-          <div class="vcard-spend">
-            <div class="vcard-spend-label">Gasto Total</div>
-            <div class="vcard-spend-val">${spendText}</div>
+          <svg class="contactless-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"></path>
+            <path d="M8 5a10.3 10.3 0 0 1 3 7 10.3 10.3 0 0 1-3 7"></path>
+            <path d="M4 8a5.3 5.3 0 0 1 2 4 5.3 5.3 0 0 1-2 4"></path>
+          </svg>
+        </div>
+
+        <div class="card-chip-row">
+          <div class="emv-chip"></div>
+          <div class="card-digits">•••• ${c.tarjeta}</div>
+        </div>
+
+        <div class="card-bottom">
+          <div>
+            <div class="card-holder-title">Titular Asignado</div>
+            <div class="card-holder-name">${escapeHtml(c.titular)}</div>
+          </div>
+          <div class="card-balance-block">
+            <div class="card-balance-label">Gasto Acumulado</div>
+            <div class="card-balance-amt">${spendText}</div>
           </div>
         </div>
       </div>
@@ -373,13 +392,13 @@ function renderTable() {
   if (!tbody) return;
 
   const list = getFilteredTransactions();
-  if (countSpan) countSpan.textContent = `Mostrando ${list.length} movimientos`;
+  if (countSpan) countSpan.textContent = `${list.length} transacciones registradas`;
 
   if (list.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: var(--ink-soft);">
-          No se encontraron consumos con tarjeta que coincidan con los filtros aplicados.
+        <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
+          No se encontraron consumos con tarjeta con los filtros seleccionados.
         </td>
       </tr>
     `;
@@ -387,46 +406,60 @@ function renderTable() {
   }
 
   tbody.innerHTML = list.map(t => {
-    let badgeClass = 'badge-warning';
-    if (t.estado_conciliacion === 'Conciliado') badgeClass = 'badge-success';
-    else if (t.estado_conciliacion === 'Factura Adjunta') badgeClass = 'badge-card';
+    let badgeClass = 'badge-pendiente';
+    let dotColor = '#d97706';
+    if (t.estado_conciliacion === 'Conciliado') {
+      badgeClass = 'badge-conciliado';
+      dotColor = '#10b981';
+    } else if (t.estado_conciliacion === 'Factura Adjunta') {
+      badgeClass = 'badge-factura';
+      dotColor = '#2563eb';
+    }
 
     const formattedMonto = t.moneda === 'USD' ? fmtUSD(t.monto) : fmtDOP(t.monto);
+    const icon = getMerchantIcon(t.categoria, t.comercio);
 
     return `
       <tr>
         <td>
-          <div style="font-weight: 600;">${t.fecha}</div>
-          <div style="font-size: 11px; color: var(--ink-soft);">${t.hora || '—'}</div>
+          <div style="font-weight: 700; color: var(--navy-dark);">${t.fecha}</div>
+          <div style="font-size: 11.5px; color: var(--text-muted);">${t.hora || '—'}</div>
         </td>
         <td>
-          <span class="badge badge-card">💳 •••• ${t.tarjeta_ultimos4}</span>
-          <div style="font-size: 11px; color: var(--ink-soft); margin-top: 3px;">${escapeHtml(t.banco)}</div>
+          <span class="badge-pill badge-card-tag">💳 •••• ${t.tarjeta_ultimos4}</span>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${escapeHtml(t.banco)}</div>
         </td>
         <td>
-          <div style="font-weight: 600; color: var(--primary);">${escapeHtml(t.comercio)}</div>
-          <div style="font-size: 11px; color: var(--ink-soft);">Titular: ${escapeHtml(t.titular || '—')}</div>
+          <div class="merchant-cell">
+            <div class="merchant-avatar">${icon}</div>
+            <div>
+              <div class="merchant-name">${escapeHtml(t.comercio)}</div>
+              <div class="merchant-sub">Titular: ${escapeHtml(t.titular || '—')}</div>
+            </div>
+          </div>
         </td>
         <td>
-          <span class="badge badge-cat">${escapeHtml(t.categoria)}</span>
+          <span style="font-size: 12px; font-weight: 600; color: #1e3a8a; background: #f0f7ff; padding: 4px 10px; border-radius: 6px; border: 1px solid #dbeafe;">
+            ${escapeHtml(t.categoria)}
+          </span>
         </td>
         <td>
-          <code style="font-size: 11px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${escapeHtml(t.num_autorizacion || '—')}</code>
-        </td>
-        <td style="font-weight: 700; font-size: 15px; color: var(--ink);">
-          ${formattedMonto}
+          <span class="amount-text">${formattedMonto}</span>
         </td>
         <td>
-          <span class="badge ${badgeClass}">${escapeHtml(t.estado_conciliacion)}</span>
-          ${t.ncf ? `<div style="font-size: 10px; color: var(--ink-soft); margin-top: 3px;">NCF: ${escapeHtml(t.ncf)}</div>` : ''}
+          <span class="badge-pill ${badgeClass}">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: ${dotColor};"></span>
+            ${escapeHtml(t.estado_conciliacion)}
+          </span>
+          ${t.ncf ? `<div style="font-size: 10px; color: var(--text-muted); font-family: monospace; margin-top: 4px;">NCF: ${escapeHtml(t.ncf)}</div>` : ''}
         </td>
         <td>
-          <div style="display: flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="window.cambiarEstado('${t.id}')" title="Conciliar / Cambiar estado">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-icon" onclick="window.cambiarEstado('${t.id}')" title="Marcar como Conciliado / Asignar NCF">
               ✓
             </button>
-            <button class="btn btn-outline btn-sm" onclick="window.eliminarGasto('${t.id}')" title="Eliminar registro" style="color: var(--danger); border-color: #fecaca;">
-              ✕
+            <button class="btn btn-secondary btn-icon" onclick="window.eliminarGasto('${t.id}')" title="Eliminar registro" style="color: var(--danger);">
+              🗑️
             </button>
           </div>
         </td>
@@ -436,20 +469,19 @@ function renderTable() {
 }
 
 // =========================================================================
-// ACCIONES Y MODALES
+// ACCIONES Y NOTIFICACIONES
 // =========================================================================
 function showToast(msg, isError = false) {
   const toast = document.createElement('div');
-  toast.className = 'toast';
-  if (isError) toast.style.background = '#dc2626';
-  toast.textContent = msg;
+  toast.className = 'toast-popup';
+  if (isError) toast.style.borderLeftColor = '#ef4444';
+  toast.innerHTML = `<span>${isError ? '⚠️' : '✨'}</span> <span>${escapeHtml(msg)}</span>`;
   document.body.appendChild(toast);
   setTimeout(() => {
     toast.remove();
   }, 4000);
 }
 
-// Exponer funciones globales para botones
 window.cambiarEstado = async function(id) {
   const item = state.transactions.find(t => t.id === id);
   if (!item) return;
@@ -477,7 +509,7 @@ window.cambiarEstado = async function(id) {
   item.ncf = ncf;
   saveCache();
   render();
-  showToast(`Estado cambiado a ${nuevoEstado}`);
+  showToast(`Transacción marcada como ${nuevoEstado}`);
 };
 
 window.eliminarGasto = async function(id) {
@@ -498,16 +530,15 @@ window.eliminarGasto = async function(id) {
   state.transactions = state.transactions.filter(t => t.id !== id);
   saveCache();
   render();
-  showToast("Registro de gasto eliminado");
+  showToast("Registro eliminado correctamente");
 };
 
 // =========================================================================
-// EVENT LISTENERS DE LA PÁGINA
+// INICIALIZACIÓN
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
   fetchTransactions();
 
-  // Modales
   const modalAi = document.getElementById('modalAi');
   const modalManual = document.getElementById('modalManual');
   const modalInfo = document.getElementById('modalInfo');
@@ -530,8 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalInfo.hidden = false;
   });
 
-  // Cerrar modales
-  document.querySelectorAll('.modal-close, .btn-close-modal').forEach(btn => {
+  document.querySelectorAll('.modal-close-x, .btn-close-modal').forEach(btn => {
     btn.addEventListener('click', () => {
       modalAi.hidden = true;
       modalManual.hidden = true;
@@ -546,7 +576,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const parsed = parseBankEmailAI(raw);
       state.detectedAiTransaction = parsed;
 
-      // Mostrar preview
       document.getElementById('previewBanco').textContent = parsed.banco;
       document.getElementById('previewTarjeta').textContent = `•••• ${parsed.tarjeta_ultimos4}`;
       document.getElementById('previewComercio').textContent = parsed.comercio;
@@ -554,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('previewCategoria').textContent = parsed.categoria;
       document.getElementById('previewAut').textContent = parsed.num_autorizacion;
       document.getElementById('previewTitular').textContent = parsed.titular;
-      document.getElementById('previewFechaHora').textContent = `${parsed.fecha} a las ${parsed.hora}`;
+      document.getElementById('previewFechaHora').textContent = `${parsed.fecha} ${parsed.hora}`;
 
       document.getElementById('aiResultBox').style.display = 'block';
       document.getElementById('btnConfirmAi').style.display = 'inline-flex';
@@ -563,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Confirmar y Guardar Transacción de IA
+  // Confirmar y Guardar
   document.getElementById('btnConfirmAi')?.addEventListener('click', async () => {
     if (!state.detectedAiTransaction) return;
 
@@ -590,10 +619,10 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
 
     modalAi.hidden = true;
-    showToast("¡Gasto con tarjeta extraído y registrado con éxito!");
+    showToast("¡Gasto con tarjeta registrado con éxito!");
   });
 
-  // Formulario Manual
+  // Registro Manual
   document.getElementById('manualForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -608,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
       categoria: document.getElementById('manualCategoria').value,
       fecha: document.getElementById('manualFecha').value,
       hora: document.getElementById('manualHora').value || new Date().toTimeString().slice(0, 5),
-      num_autorizacion: document.getElementById('manualAut').value || 'MANUAL-' + Date.now().toString().slice(-4),
+      num_autorizacion: document.getElementById('manualAut').value || 'AUT-' + Math.floor(100000 + Math.random() * 900000),
       ncf: document.getElementById('manualNcf').value || null,
       notas: document.getElementById('manualNotas').value || null,
       estado_conciliacion: document.getElementById('manualEstado').value
@@ -635,16 +664,12 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
 
     modalManual.hidden = true;
-    showToast("Gasto con tarjeta guardado correctamente");
+    showToast("Gasto con tarjeta guardado");
   });
 
   // Filtros
   document.getElementById('filterBanco')?.addEventListener('change', e => {
     state.filters.banco = e.target.value;
-    render();
-  });
-  document.getElementById('filterTarjeta')?.addEventListener('change', e => {
-    state.filters.tarjeta = e.target.value;
     render();
   });
   document.getElementById('filterMoneda')?.addEventListener('change', e => {
